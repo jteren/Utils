@@ -1,7 +1,6 @@
 ﻿using LibGit2Sharp;
 using System.Diagnostics;
 using static System.Windows.Forms.ComboBox;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView;
 
 namespace BranchMerger
 {
@@ -11,8 +10,7 @@ namespace BranchMerger
         private string _masterBranch = "";
         private string _featureBranch = "";
         private CancellationTokenSource _cts;
-        private ObjectCollection sourceItems;
-
+    
         public Form1()
         {
             InitializeComponent();
