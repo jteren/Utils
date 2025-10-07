@@ -228,50 +228,57 @@ namespace BranchMerger
 
             _allRemoteBranchItems.Clear();
 
-            using (var repo = new Repository(_repoPath))
+            try
             {
-                foreach (var branch in repo.Branches)
+                using (var repo = new Repository(_repoPath))
                 {
-                    _allRemoteBranchItems.Add(branch.FriendlyName);
-
-                    var latestCommit = branch.Tip;
-                    if (latestCommit == null) continue;
-
-                    var author = latestCommit.Author;
-
-                    //if (author.Name.Equals(authorNameOrEmail, StringComparison.OrdinalIgnoreCase) ||
-                    //    author.Email.Equals(authorNameOrEmail, StringComparison.OrdinalIgnoreCase))
-                    //{
-                    //    if (!branch.IsRemote)
-                    //        cbxLocalBranches.Items.Add(branch.FriendlyName);
-                    //    else
-                    //        cbxRemoteBranches.Items.Add(branch.FriendlyName);
-                    //}
-
-                    if (branch.IsRemote || true)
+                    foreach (var branch in repo.Branches)
                     {
-                        cbxRemoteBranches.Items.Add(branch.FriendlyName);
+                        _allRemoteBranchItems.Add(branch.FriendlyName);
 
-                        //if (string.IsNullOrWhiteSpace(txtSourceFilter.Text))
+                        var latestCommit = branch.Tip;
+                        if (latestCommit == null) continue;
+
+                        var author = latestCommit.Author;
+
+                        //if (author.Name.Equals(authorNameOrEmail, StringComparison.OrdinalIgnoreCase) ||
+                        //    author.Email.Equals(authorNameOrEmail, StringComparison.OrdinalIgnoreCase))
                         //{
-                        //    cbxRemoteBranches.Items.Add(branch.FriendlyName);
+                        //    if (!branch.IsRemote)
+                        //        cbxLocalBranches.Items.Add(branch.FriendlyName);
+                        //    else
+                        //        cbxRemoteBranches.Items.Add(branch.FriendlyName);
                         //}
-                        //else if (!string.IsNullOrWhiteSpace(txtSourceFilter.Text) &&
-                        //          branch.FriendlyName.Contains(txtSourceFilter.Text, StringComparison.OrdinalIgnoreCase))
-                        //{
-                        //    cbxRemoteBranches.Items.Add(branch.FriendlyName);
-                        //}
-                        //else { }                       
+
+                        if (branch.IsRemote || true)
+                        {
+                            cbxRemoteBranches.Items.Add(branch.FriendlyName);
+
+                            //if (string.IsNullOrWhiteSpace(txtSourceFilter.Text))
+                            //{
+                            //    cbxRemoteBranches.Items.Add(branch.FriendlyName);
+                            //}
+                            //else if (!string.IsNullOrWhiteSpace(txtSourceFilter.Text) &&
+                            //          branch.FriendlyName.Contains(txtSourceFilter.Text, StringComparison.OrdinalIgnoreCase))
+                            //{
+                            //    cbxRemoteBranches.Items.Add(branch.FriendlyName);
+                            //}
+                            //else { }                       
+                        }
+                    }
+
+                    foreach (var branch in repo.Branches)
+                    {
+                        if (branch.IsRemote || true)
+                        {
+                            cbxLocalBranches.Items.Add(branch.FriendlyName);
+                        }
                     }
                 }
-
-                foreach (var branch in repo.Branches)
-                {
-                    if (branch.IsRemote || true)
-                    {
-                        cbxLocalBranches.Items.Add(branch.FriendlyName);                                  
-                    }
-                }
+            }
+            catch (RepositoryNotFoundException ex)
+            {
+                AppendOutput($"❌ No git repository found in selected folder.");
             }
         }
 
