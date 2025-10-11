@@ -1,9 +1,4 @@
-using Microsoft.VisualBasic.ApplicationServices;
-using System;
-using System.Drawing;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace ScreenCapture
 {
@@ -16,7 +11,12 @@ namespace ScreenCapture
 
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayMenu;
-        private static bool isCapturingEnabled = true;
+        
+        // Field change for thread-safety
+        private static volatile bool isCapturingEnabled = true;
+        private static object _captureLock = new object();
+
+
 
         public Form1()
         {
@@ -24,8 +24,14 @@ namespace ScreenCapture
             InitializeTrayIcon();
 
             _proc = HookCallback;
-            _hookID = SetHook(_proc);
-            this.FormClosing += (s, e) => UnhookWindowsHookEx(_hookID);
+
+            if (_hookID == IntPtr.Zero)
+            {
+                _hookID = SetHook(_proc);
+            }
+                        
+            this.FormClosing += (s, e) => { UnhookWindowsHookEx(_hookID); _hookID = IntPtr.Zero; };
+            Application.ApplicationExit += (s, e) => UnhookWindowsHookEx(_hookID);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -73,19 +79,43 @@ namespace ScreenCapture
         }
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
+                
+        // Hook callback: swallow PrintScreen so OS doesn't show Snip UI
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && isCapturingEnabled) 
+            const int WM_KEYDOWN = 0x0100;
+            const int WM_KEYUP = 0x0101;
+
+            if (nCode >= 0 && isCapturingEnabled)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
-                if (vkCode == (int)Keys.PrintScreen)
+
+                if (wParam == (IntPtr)WM_KEYDOWN && vkCode == (int)Keys.PrintScreen)
                 {
-                    CaptureScreen();
+                    // Handle capture on a background thread to keep hook responsive
+                    Task.Run(() =>
+                    {
+                        // Basic re-entrancy guard so rapid presses don't overlap
+                        if (!Monitor.TryEnter(_captureLock))
+                            return;
+                        try
+                        {
+                            CaptureScreen();
+                        }
+                        finally
+                        {
+                            Monitor.Exit(_captureLock);
+                        }
+                    });
+
+                    // Return non-zero to prevent other apps / OS from processing PrintScreen
+                    return (IntPtr)1;
                 }
             }
+
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
+
         private static void CaptureScreen()
         {
             try
@@ -97,8 +127,9 @@ namespace ScreenCapture
                     {
                         g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
                     }
-                    
-                    string folder = Path.Combine("C:\\Users\\Jan\\Desktop\\", "Screenshots");
+
+                    string userDesktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string folder = Path.Combine(userDesktop, "Screenshots");
                     Directory.CreateDirectory(folder);
                     string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss}.png";
                     string path = Path.Combine(folder, filename);
@@ -129,15 +160,3 @@ namespace ScreenCapture
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-    

@@ -1,6 +1,5 @@
 ﻿using LibGit2Sharp;
 using System.Diagnostics;
-using static System.Windows.Forms.ComboBox;
 
 namespace BranchMerger
 {
@@ -230,7 +229,7 @@ namespace BranchMerger
             {
                 using (var repo = new Repository(_repoPath))
                 {
-                    foreach (var branch in repo.Branches)
+                    foreach (var branch in repo.Branches.Where(x => !x.IsRemote).ToList())
                     {
                         _allRemoteBranchItems.Add(branch.FriendlyName);
 
@@ -248,7 +247,7 @@ namespace BranchMerger
                         //        cbxRemoteBranches.Items.Add(branch.FriendlyName);
                         //}
 
-                        if (branch.IsRemote || true)
+                        if (!branch.IsRemote)
                         {
                             cbxRemoteBranches.Items.Add(branch.FriendlyName);
 
@@ -267,7 +266,7 @@ namespace BranchMerger
 
                     foreach (var branch in repo.Branches)
                     {
-                        if (branch.IsRemote || true)
+                        if (!branch.IsRemote)
                         {
                             cbxLocalBranches.Items.Add(branch.FriendlyName);
                         }
