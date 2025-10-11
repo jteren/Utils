@@ -42,14 +42,15 @@
             label3 = new Label();
             txtSourceFilter = new TextBox();
             txtTargetFilter = new TextBox();
+            lblOutput = new Label();
             SuspendLayout();
             // 
             // btnRun
             // 
             btnRun.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnRun.Location = new Point(875, 323);
+            btnRun.Location = new Point(915, 412);
             btnRun.Name = "btnRun";
-            btnRun.Size = new Size(277, 263);
+            btnRun.Size = new Size(205, 263);
             btnRun.TabIndex = 0;
             btnRun.Text = "Run Merge";
             btnRun.UseVisualStyleBackColor = true;
@@ -57,23 +58,23 @@
             // lstOutput
             // 
             lstOutput.FormattingEnabled = true;
-            lstOutput.Location = new Point(63, 323);
+            lstOutput.Location = new Point(31, 412);
             lstOutput.Name = "lstOutput";
-            lstOutput.Size = new Size(806, 304);
+            lstOutput.Size = new Size(873, 304);
             lstOutput.TabIndex = 1;
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(875, 585);
+            btnCancel.Location = new Point(915, 675);
             btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(277, 42);
+            btnCancel.Size = new Size(205, 42);
             btnCancel.TabIndex = 2;
             btnCancel.Text = "Cancel";
             btnCancel.UseVisualStyleBackColor = true;
             // 
             // btnGetBranches
             // 
-            btnGetBranches.Location = new Point(953, 51);
+            btnGetBranches.Location = new Point(920, 51);
             btnGetBranches.Name = "btnGetBranches";
             btnGetBranches.Size = new Size(199, 40);
             btnGetBranches.TabIndex = 3;
@@ -88,9 +89,9 @@
             cbxRemoteBranches.DropDownStyle = ComboBoxStyle.DropDownList;
             cbxRemoteBranches.FlatStyle = FlatStyle.Popup;
             cbxRemoteBranches.FormattingEnabled = true;
-            cbxRemoteBranches.Location = new Point(63, 224);
+            cbxRemoteBranches.Location = new Point(30, 176);
             cbxRemoteBranches.Name = "cbxRemoteBranches";
-            cbxRemoteBranches.Size = new Size(498, 38);
+            cbxRemoteBranches.Size = new Size(874, 38);
             cbxRemoteBranches.TabIndex = 4;
             cbxRemoteBranches.DropDown += cbxRemoteBranches_DropDown;
             cbxRemoteBranches.DropDownClosed += cbxRemoteBranches_DropDownClosed;
@@ -100,9 +101,9 @@
             cbxLocalBranches.DropDownStyle = ComboBoxStyle.DropDownList;
             cbxLocalBranches.FlatStyle = FlatStyle.Popup;
             cbxLocalBranches.FormattingEnabled = true;
-            cbxLocalBranches.Location = new Point(654, 224);
+            cbxLocalBranches.Location = new Point(30, 281);
             cbxLocalBranches.Name = "cbxLocalBranches";
-            cbxLocalBranches.Size = new Size(498, 38);
+            cbxLocalBranches.Size = new Size(874, 38);
             cbxLocalBranches.TabIndex = 5;
             cbxLocalBranches.DropDown += cbxLocalBranches_DropDown;
             cbxLocalBranches.DropDownClosed += cbxLocalBranches_DropDownClosed;
@@ -113,7 +114,7 @@
             // 
             // txtSelectedRepo
             // 
-            txtSelectedRepo.Location = new Point(63, 52);
+            txtSelectedRepo.Location = new Point(30, 52);
             txtSelectedRepo.Name = "txtSelectedRepo";
             txtSelectedRepo.Size = new Size(1089, 37);
             txtSelectedRepo.TabIndex = 6;
@@ -122,7 +123,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(64, 19);
+            label1.Location = new Point(31, 19);
             label1.Name = "label1";
             label1.Size = new Size(116, 30);
             label1.TabIndex = 7;
@@ -131,7 +132,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(64, 191);
+            label2.Location = new Point(31, 143);
             label2.Name = "label2";
             label2.Size = new Size(152, 30);
             label2.TabIndex = 8;
@@ -140,7 +141,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(654, 191);
+            label3.Location = new Point(30, 248);
             label3.Name = "label3";
             label3.Size = new Size(146, 30);
             label3.TabIndex = 9;
@@ -148,23 +149,33 @@
             // 
             // txtSourceFilter
             // 
-            txtSourceFilter.Location = new Point(276, 183);
+            txtSourceFilter.Location = new Point(915, 176);
             txtSourceFilter.Name = "txtSourceFilter";
-            txtSourceFilter.Size = new Size(259, 37);
+            txtSourceFilter.Size = new Size(205, 37);
             txtSourceFilter.TabIndex = 10;
             // 
             // txtTargetFilter
             // 
-            txtTargetFilter.Location = new Point(868, 183);
+            txtTargetFilter.Location = new Point(915, 282);
             txtTargetFilter.Name = "txtTargetFilter";
-            txtTargetFilter.Size = new Size(259, 37);
+            txtTargetFilter.Size = new Size(205, 37);
             txtTargetFilter.TabIndex = 11;
+            // 
+            // lblOutput
+            // 
+            lblOutput.AutoSize = true;
+            lblOutput.Location = new Point(31, 379);
+            lblOutput.Name = "lblOutput";
+            lblOutput.Size = new Size(81, 30);
+            lblOutput.TabIndex = 12;
+            lblOutput.Text = "Output";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1181, 659);
+            ClientSize = new Size(1159, 755);
+            Controls.Add(lblOutput);
             Controls.Add(txtTargetFilter);
             Controls.Add(txtSourceFilter);
             Controls.Add(label3);
@@ -179,6 +190,7 @@
             Controls.Add(txtSelectedRepo);
             Name = "Form1";
             Text = "Branch merger";
+            Load += Form1_Load;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -199,5 +211,6 @@
         private Label label3;
         private TextBox txtSourceFilter;
         private TextBox txtTargetFilter;
+        private Label lblOutput;
     }
 }

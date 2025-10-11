@@ -9,7 +9,7 @@ namespace BranchMerger
         private string _masterBranch = "";
         private string _featureBranch = "";
         private CancellationTokenSource _cts;
-    
+
         public Form1()
         {
             InitializeComponent();
@@ -294,6 +294,9 @@ namespace BranchMerger
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
                     string selectedPath = folderDialog.SelectedPath;
+                    Properties.Settings.Default.LastFolderPath = selectedPath;
+                    Properties.Settings.Default.Save();
+
                     txtSelectedRepo.Text = selectedPath;
                     _repoPath = selectedPath;
                     GetBranches();
@@ -374,6 +377,19 @@ namespace BranchMerger
             {
                 cbxLocalBranches.SelectedItem = selectedItem;
             }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            string lastPath = Properties.Settings.Default.LastFolderPath;
+            if (!string.IsNullOrEmpty(lastPath))
+            {
+                // Use the path (e.g., pre-fill a textbox or auto-navigate)
+                txtSelectedRepo.Text = lastPath;
+                _repoPath = lastPath;
+                GetBranches();
+            }
+
         }
     }
 }
