@@ -70,18 +70,26 @@ namespace BranchMerger
 
         private async Task StartWorkflowAsync()
         {
+
+            lstOutput.Items.Clear();
+
             if (!Directory.Exists(_repoPath))
             {
                 AppendOutput($"❌ Repository not found");
                 return;
             }
-
+            
             _masterBranch = cbxRemoteBranches.SelectedItem?.ToString() ?? "";
             _featureBranch = cbxLocalBranches.SelectedItem?.ToString() ?? "";
 
             if (string.IsNullOrWhiteSpace(_masterBranch) || string.IsNullOrWhiteSpace(_featureBranch))
             {
                 AppendOutput($"❌ Please select both source and target branches.");
+                return;
+            }
+            else if (_masterBranch.Equals(_featureBranch))
+            {
+                AppendOutput($"❌ Cannot merge the branch to itself.");
                 return;
             }
 
@@ -304,7 +312,7 @@ namespace BranchMerger
             }
         }
 
-        private List<string> _allRemoteBranchItems = new(); // TODO : Initialize this list appropriately
+        private List<string> _allRemoteBranchItems = new(); 
         private void cbxRemoteBranches_DropDown(object sender, EventArgs e)
         {
             // Only copy once, when _allRemoteBranchItems is null or empty
@@ -381,15 +389,50 @@ namespace BranchMerger
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            int x = Properties.Settings.Default.WindowLocationX;
+            int y = Properties.Settings.Default.WindowLocationY;
+
+            // Optional: validate screen bounds
+            var screenBounds = Screen.PrimaryScreen.WorkingArea;
+            if (screenBounds.Contains(new Point(x, y)))
+            {
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = new Point(x, y);
+            }
+
+            string sourceFilter = Properties.Settings.Default.SourceFilter;
+            if (!string.IsNullOrEmpty(sourceFilter))
+            {
+                txtSourceFilter.Text = sourceFilter;
+            }
+
             string lastPath = Properties.Settings.Default.LastFolderPath;
             if (!string.IsNullOrEmpty(lastPath))
-            {
-                // Use the path (e.g., pre-fill a textbox or auto-navigate)
+            {                
                 txtSelectedRepo.Text = lastPath;
                 _repoPath = lastPath;
                 GetBranches();
             }
-
         }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.SourceFilter = txtSourceFilter.Text;
+            Properties.Settings.Default.WindowLocationX = this.Location.X;
+            Properties.Settings.Default.WindowLocationY = this.Location.Y;
+
+            Properties.Settings.Default.Save();
+        }
+
+        private void btnSelectCurrent_Click(object sender, EventArgs e)
+        {
+            string repoPath = _repoPath;
+            using (var repo = new Repository(_repoPath))
+            {
+                string branchName = repo.Head.FriendlyName;
+                // pre select current branch
+                cbxLocalBranches.SelectedItem = branchName;
+            }
+        }       
     }
 }

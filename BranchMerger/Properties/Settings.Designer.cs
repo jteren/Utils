@@ -34,5 +34,41 @@ namespace BranchMerger.Properties {
                 this["LastFolderPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SourceFilter {
+            get {
+                return ((string)(this["SourceFilter"]));
+            }
+            set {
+                this["SourceFilter"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int WindowLocationX {
+            get {
+                return ((int)(this["WindowLocationX"]));
+            }
+            set {
+                this["WindowLocationX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int WindowLocationY {
+            get {
+                return ((int)(this["WindowLocationY"]));
+            }
+            set {
+                this["WindowLocationY"] = value;
+            }
+        }
     }
 }

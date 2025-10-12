@@ -43,6 +43,7 @@
             txtSourceFilter = new TextBox();
             txtTargetFilter = new TextBox();
             lblOutput = new Label();
+            btnSelectCurrent = new Button();
             SuspendLayout();
             // 
             // btnRun
@@ -53,7 +54,7 @@
             btnRun.Size = new Size(205, 263);
             btnRun.TabIndex = 0;
             btnRun.Text = "Run Merge";
-            btnRun.UseVisualStyleBackColor = true;
+            btnRun.UseVisualStyleBackColor = true;            
             // 
             // lstOutput
             // 
@@ -156,7 +157,7 @@
             // 
             // txtTargetFilter
             // 
-            txtTargetFilter.Location = new Point(915, 282);
+            txtTargetFilter.Location = new Point(915, 281);
             txtTargetFilter.Name = "txtTargetFilter";
             txtTargetFilter.Size = new Size(205, 37);
             txtTargetFilter.TabIndex = 11;
@@ -170,11 +171,23 @@
             lblOutput.TabIndex = 12;
             lblOutput.Text = "Output";
             // 
+            // btnSelectCurrent
+            // 
+            btnSelectCurrent.Font = new Font("Segoe UI", 10F);
+            btnSelectCurrent.Location = new Point(778, 239);
+            btnSelectCurrent.Name = "btnSelectCurrent";
+            btnSelectCurrent.Size = new Size(103, 39);
+            btnSelectCurrent.TabIndex = 13;
+            btnSelectCurrent.Text = "Current";
+            btnSelectCurrent.UseVisualStyleBackColor = true;
+            btnSelectCurrent.Click += btnSelectCurrent_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1159, 755);
+            Controls.Add(btnSelectCurrent);
             Controls.Add(lblOutput);
             Controls.Add(txtTargetFilter);
             Controls.Add(txtSourceFilter);
@@ -190,6 +203,7 @@
             Controls.Add(txtSelectedRepo);
             Name = "Form1";
             Text = "Branch merger";
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             ResumeLayout(false);
             PerformLayout();
@@ -212,5 +226,6 @@
         private TextBox txtSourceFilter;
         private TextBox txtTargetFilter;
         private Label lblOutput;
+        private Button btnSelectCurrent;
     }
 }
