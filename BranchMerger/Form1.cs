@@ -214,9 +214,17 @@ namespace BranchMerger
         private void AppendOutput(string text)
         {
             if (lstOutput.InvokeRequired)
-                lstOutput.Invoke(new Action(() => lstOutput.Items.Add(text)));
+            {
+                lstOutput.Invoke(new Action(() => {
+                    lstOutput.Items.Add(text);
+                    lstOutput.TopIndex = lstOutput.Items.Count - 1; // Auto-scroll
+                }));
+            }
             else
+            {
                 lstOutput.Items.Add(text);
+                lstOutput.TopIndex = lstOutput.Items.Count - 1; 
+            }
         }
 
         private void GetBranches()

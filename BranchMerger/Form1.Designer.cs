@@ -27,7 +27,7 @@
         ///  the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
-        {
+        {            
             btnRun = new Button();
             lstOutput = new ListBox();
             btnCancel = new Button();
@@ -54,13 +54,14 @@
             btnRun.Size = new Size(205, 263);
             btnRun.TabIndex = 0;
             btnRun.Text = "Run Merge";
-            btnRun.UseVisualStyleBackColor = true;            
+            btnRun.UseVisualStyleBackColor = true;
             // 
             // lstOutput
             // 
             lstOutput.FormattingEnabled = true;
             lstOutput.Location = new Point(31, 412);
             lstOutput.Name = "lstOutput";
+            lstOutput.ScrollAlwaysVisible = true;
             lstOutput.Size = new Size(873, 304);
             lstOutput.TabIndex = 1;
             // 
@@ -200,7 +201,7 @@
             Controls.Add(btnCancel);
             Controls.Add(lstOutput);
             Controls.Add(btnRun);
-            Controls.Add(txtSelectedRepo);
+            Controls.Add(txtSelectedRepo);            
             Name = "Form1";
             Text = "Branch merger";
             FormClosing += Form1_FormClosing;
