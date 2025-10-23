@@ -28,8 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             button1 = new Button();
             btnStop = new Button();
+            notifyIcon1 = new NotifyIcon(components);
             SuspendLayout();
             // 
             // button1
@@ -52,6 +55,12 @@
             btnStop.UseVisualStyleBackColor = true;
             btnStop.Click += btnStop_Click;
             // 
+            // notifyIcon1
+            // 
+            notifyIcon1.Icon = (Icon)resources.GetObject("notifyIcon1.Icon");
+            notifyIcon1.Text = "My App";
+            notifyIcon1.Visible = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
@@ -61,6 +70,8 @@
             Controls.Add(button1);
             Name = "Form1";
             Text = "Recorder";
+            WindowState = FormWindowState.Minimized;
+            Load += Form1_Load;
             ResumeLayout(false);
         }
 
@@ -68,5 +79,6 @@
 
         private Button button1;
         private Button btnStop;
+        private NotifyIcon notifyIcon1;
     }
 }

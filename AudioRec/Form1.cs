@@ -5,25 +5,33 @@ namespace AudioRec
 {
     public partial class Form1 : Form
     {
+        private GlobalKeyboardHook _keyboardHook;
+
         private WasapiLoopbackCapture systemCapture;
         private WaveInEvent micCapture;
         private MixingSampleProvider mixer;
         private WaveFileWriter writer;
         private BufferedWaveProvider micBuffer, sysBuffer;
-        private CancellationTokenSource cts;
+        public CancellationTokenSource cts;
         private Task recordTask;
 
         public Form1()
         {
             InitializeComponent();
+            _keyboardHook = new GlobalKeyboardHook(this); 
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            StartRecording();
+        }
+
+        public void StartRecording()
+        {
             if (cts != null) return; // already recording
 
             int targetSampleRate = 44100;
-            
+
             // Mic (mono) -> buffer
             micCapture = new WaveInEvent { WaveFormat = new WaveFormat(targetSampleRate, 1) };
             micBuffer = new BufferedWaveProvider(micCapture.WaveFormat) { DiscardOnBufferOverflow = true };
@@ -95,7 +103,13 @@ namespace AudioRec
             }, cts.Token);
         }
 
+
         private void btnStop_Click(object sender, EventArgs e)
+        {
+            StopRecording();
+        }
+
+        public void StopRecording()
         {
             if (cts == null) return;
 
@@ -126,5 +140,31 @@ namespace AudioRec
             var ts = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
             return $@"{userDesktop}\TeamsCall_{ts}.wav";
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.ShowInTaskbar = false; 
+
+            ContextMenuStrip trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add("Open", null, (s, ev) => RestoreFromTray());
+            trayMenu.Items.Add("Exit", null, (s, ev) => Application.Exit());
+
+            notifyIcon1.ContextMenuStrip = trayMenu;
+
+        }
+
+        private void RestoreFromTray()
+        {
+            this.ShowInTaskbar = true;
+            this.WindowState = FormWindowState.Normal;
+            this.BringToFront();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            _keyboardHook.Unhook();
+            base.OnFormClosing(e);
+        }
+
     }
 }
