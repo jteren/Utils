@@ -18,7 +18,7 @@ namespace AudioRec
         public Form1()
         {
             InitializeComponent();
-            _keyboardHook = new GlobalKeyboardHook(this); 
+            _keyboardHook = new GlobalKeyboardHook(this);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -35,11 +35,17 @@ namespace AudioRec
             // Mic (mono) -> buffer
             micCapture = new WaveInEvent { WaveFormat = new WaveFormat(targetSampleRate, 1) };
             micBuffer = new BufferedWaveProvider(micCapture.WaveFormat) { DiscardOnBufferOverflow = true };
+
+            // increase buffer to 10 seconds to absorb jitter
+            micBuffer.BufferLength = micCapture.WaveFormat.AverageBytesPerSecond * 10;
             micCapture.DataAvailable += (s, a) => micBuffer.AddSamples(a.Buffer, 0, a.BytesRecorded);
 
             // System loopback -> buffer
             systemCapture = new WasapiLoopbackCapture();
             sysBuffer = new BufferedWaveProvider(systemCapture.WaveFormat) { DiscardOnBufferOverflow = true };
+
+            // increase buffer to 10 seconds to absorb jitter
+            sysBuffer.BufferLength = systemCapture.WaveFormat.AverageBytesPerSecond * 10;
             systemCapture.DataAvailable += (s, a) => sysBuffer.AddSamples(a.Buffer, 0, a.BytesRecorded);
 
             // Build sample providers and resample to targetSampleRate
@@ -65,7 +71,7 @@ namespace AudioRec
             systemCapture.StartRecording();
             micCapture.StartRecording();
 
-            // Throttled write loop: read a chunk, write it, then sleep exactly the chunk duration
+            // Throttled write loop: read a chunk, write it, then delay according to actual audio duration.
             recordTask = Task.Run(() =>
             {
                 // Use a chunk that represents e.g. 100ms of audio
@@ -76,23 +82,46 @@ namespace AudioRec
 
                 try
                 {
+                    // raise thread priority to reduce scheduling jitter
+                    Thread.CurrentThread.Priority = ThreadPriority.Highest;
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    long nextTargetMs = sw.ElapsedMilliseconds;
+                    int flushCounter = 0;
                     while (!cts.Token.IsCancellationRequested)
                     {
                         int bytesRead = pcm16Provider.Read(buffer, 0, buffer.Length);
                         if (bytesRead > 0)
                         {
                             writer.Write(buffer, 0, bytesRead);
-
+                            // periodically flush to minimize data loss if app crashes
+                            if (++flushCounter >= 10) { writer.Flush(); flushCounter = 0; }
                             // Throttle by the real time represented by bytesRead
                             double secondsWritten = bytesRead / (double)bytesPerSecond;
                             int msSleep = (int)(secondsWritten * 1000);
-                            if (msSleep > 0) Thread.Sleep(msSleep);
-                            else Thread.Sleep(10);
+                            if (msSleep < 5) msSleep = 5;
+                            nextTargetMs += msSleep;
+                            long delay = nextTargetMs - sw.ElapsedMilliseconds;
+                            if (delay > 0)
+                            {
+                                try { Task.Delay((int)delay, cts.Token).Wait(cts.Token); }
+                                catch (OperationCanceledException) { break; }
+                            }
+                            else
+                            {
+                                // we're behind; yield so producers can catch up
+                                Thread.Yield();
+                                nextTargetMs = sw.ElapsedMilliseconds;
+                            }
                         }
                         else
                         {
-                            Thread.Sleep(10);
+                            // nothing available — small delay
+                            try { Task.Delay(10, cts.Token).Wait(cts.Token); }
+                            catch (OperationCanceledException) { break; }
                         }
+                        // Optional: observe buffer sizes to detect overflow/underrun
+                        // if (micBuffer.BufferedBytes > micBuffer.BufferLength * 0.9) { /* log or handle */ }
+                        // if (sysBuffer.BufferedBytes > sysBuffer.BufferLength * 0.9) { /* log or handle */ }
                     }
                 }
                 catch (OperationCanceledException) { }
@@ -143,7 +172,7 @@ namespace AudioRec
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.ShowInTaskbar = false; 
+            this.ShowInTaskbar = false;
 
             ContextMenuStrip trayMenu = new ContextMenuStrip();
             trayMenu.Items.Add("Open", null, (s, ev) => RestoreFromTray());
