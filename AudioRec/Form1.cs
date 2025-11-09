@@ -15,10 +15,18 @@ namespace AudioRec
         public CancellationTokenSource cts;
         private Task recordTask;
 
+        private Icon idleIcon;
+        private Icon recordingIcon;
+
+
         public Form1()
         {
             InitializeComponent();
             _keyboardHook = new GlobalKeyboardHook(this);
+
+            idleIcon = new Icon("idle.ico");         // default icon
+            recordingIcon = new Icon("recording.ico"); // icon shown during recording
+            notifyIcon1.Icon = idleIcon;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -28,6 +36,8 @@ namespace AudioRec
 
         public void StartRecording()
         {
+            notifyIcon1.Icon = recordingIcon;
+
             if (cts != null) return; // already recording
 
             int targetSampleRate = 44100;
@@ -140,6 +150,8 @@ namespace AudioRec
 
         public void StopRecording()
         {
+            notifyIcon1.Icon = idleIcon;
+
             if (cts == null) return;
 
             // Signal stop
