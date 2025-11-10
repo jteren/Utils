@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace ScreenCapture
@@ -21,6 +22,9 @@ namespace ScreenCapture
         private Icon originalIcon;
         private Icon blankIcon;
 
+        private static ConcurrentQueue<Bitmap> captureQueue = new ConcurrentQueue<Bitmap>();
+        private static CancellationTokenSource saveWorkerToken = new CancellationTokenSource();
+
         public Form1()
         {
             InitializeComponent();
@@ -39,9 +43,11 @@ namespace ScreenCapture
             {
                 _hookID = SetHook(_proc);
             }
-                        
+
+            Task.Run(() => SaveWorkerLoop(saveWorkerToken.Token));
+
             this.FormClosing += (s, e) => { UnhookWindowsHookEx(_hookID); _hookID = IntPtr.Zero; };
-            Application.ApplicationExit += (s, e) => UnhookWindowsHookEx(_hookID);
+            Application.ApplicationExit += (s, e) => { UnhookWindowsHookEx(_hookID); saveWorkerToken.Cancel(); } ;
         }
 
         private void FlashTrayIcon()
@@ -143,35 +149,55 @@ namespace ScreenCapture
 
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
-
+                
         private static void CaptureScreen()
         {
             try
             {
                 var bounds = Screen.PrimaryScreen.Bounds;
-                using (Bitmap bmp = new Bitmap(bounds.Width, bounds.Height))
+                Bitmap bmp = new Bitmap(bounds.Width, bounds.Height);
+                using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
-                    }
-
-                    string userDesktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    string folder = Path.Combine(userDesktop, "Screenshots");
-                    Directory.CreateDirectory(folder);
-                    string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-                    string path = Path.Combine(folder, filename);
-                    bmp.Save(path);
-
-                    Form1 instance = Application.OpenForms.OfType<Form1>().FirstOrDefault();
-                    instance?.Invoke((MethodInvoker)(() => instance.FlashTrayIcon()));
-
-                    Console.WriteLine($"Saved: {path}");
+                    g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
                 }
+
+                captureQueue.Enqueue(bmp); // Don't save here
+                Form1 instance = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+                instance?.Invoke((MethodInvoker)(() => instance.FlashTrayIcon()));
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error capturing screen: {ex.Message}");
+            }
+        }
+
+        private static void SaveWorkerLoop(CancellationToken token)
+        {
+            string folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Screenshots");
+            Directory.CreateDirectory(folder);
+
+            while (!token.IsCancellationRequested)
+            {
+                if (captureQueue.TryDequeue(out Bitmap bmp))
+                {
+                    try
+                    {
+                        string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
+                        string path = Path.Combine(folder, filename);
+                        bmp.Save(path);
+                        bmp.Dispose();
+                        Console.WriteLine($"Saved: {path}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Save error: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(10); // Avoid busy loop
+                }
             }
         }
 
