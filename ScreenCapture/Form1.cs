@@ -16,12 +16,22 @@ namespace ScreenCapture
         private static volatile bool isCapturingEnabled = true;
         private static object _captureLock = new object();
 
-
+        private System.Windows.Forms.Timer flashTimer;
+        private int flashCount = 0;
+        private Icon originalIcon;
+        private Icon blankIcon;
 
         public Form1()
         {
             InitializeComponent();
             InitializeTrayIcon();
+
+            originalIcon = trayIcon.Icon;
+            blankIcon = new Icon("shot.ico"); 
+
+            flashTimer = new System.Windows.Forms.Timer();
+            flashTimer.Interval = 250; // milliseconds
+            flashTimer.Tick += FlashTimer_Tick;
 
             _proc = HookCallback;
 
@@ -32,6 +42,24 @@ namespace ScreenCapture
                         
             this.FormClosing += (s, e) => { UnhookWindowsHookEx(_hookID); _hookID = IntPtr.Zero; };
             Application.ApplicationExit += (s, e) => UnhookWindowsHookEx(_hookID);
+        }
+
+        private void FlashTrayIcon()
+        {
+            flashCount = 0;
+            flashTimer.Start();
+        }
+
+        private void FlashTimer_Tick(object sender, EventArgs e)
+        {
+            trayIcon.Icon = (flashCount % 2 == 0) ? blankIcon : originalIcon;
+            flashCount++;
+
+            if (flashCount >= 4) // 2 flashes
+            {
+                flashTimer.Stop();
+                trayIcon.Icon = originalIcon;
+            }
         }
 
         protected override void OnLoad(EventArgs e)
@@ -134,6 +162,10 @@ namespace ScreenCapture
                     string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss}.png";
                     string path = Path.Combine(folder, filename);
                     bmp.Save(path);
+
+                    Form1 instance = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+                    instance?.Invoke((MethodInvoker)(() => instance.FlashTrayIcon()));
+
                     Console.WriteLine($"Saved: {path}");
                 }
             }
