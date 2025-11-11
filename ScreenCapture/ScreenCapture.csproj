@@ -10,10 +10,14 @@
 
   <ItemGroup>
     <None Remove="icon32.ico" />
+    <None Remove="shot.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="icon32.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="shot.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
