@@ -169,6 +169,17 @@ namespace AudioRec
             systemCapture?.Dispose();
             micCapture?.Dispose();
 
+            string? wavPath = writer?.Filename;
+
+            if (File.Exists(wavPath))
+            {
+                try { ConvertWavToMp3(wavPath); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"MP3 conversion failed: {ex.Message}");
+                }
+            }
+
             cts.Dispose();
             cts = null;
             recordTask = null;
@@ -191,7 +202,18 @@ namespace AudioRec
             trayMenu.Items.Add("Exit", null, (s, ev) => Application.Exit());
 
             notifyIcon1.ContextMenuStrip = trayMenu;
+        }
 
+        private void ConvertWavToMp3(string wavPath)
+        {
+            string mp3Path = Path.ChangeExtension(wavPath, ".mp3");
+            
+            using (var reader = new AudioFileReader(wavPath))
+            {                
+
+                MediaFoundationEncoder.EncodeToMp3(reader, mp3Path, 192000);
+            }
+            File.Delete(wavPath); // delete original WAV after successful conversion
         }
 
         private void RestoreFromTray()
@@ -206,6 +228,5 @@ namespace AudioRec
             _keyboardHook.Unhook();
             base.OnFormClosing(e);
         }
-
     }
 }
