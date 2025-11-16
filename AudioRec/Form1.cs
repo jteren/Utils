@@ -190,7 +190,7 @@ namespace AudioRec
         {
             string userDesktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var ts = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            return $@"{userDesktop}\TeamsCall_{ts}.wav";
+            return $@"{userDesktop}\Screenshots\TC_{ts}.wav";
         }
 
         private void Form1_Load(object sender, EventArgs e)
