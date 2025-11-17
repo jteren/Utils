@@ -61,7 +61,7 @@ namespace ScreenCapture
             trayIcon.Icon = (flashCount % 2 == 0) ? blankIcon : originalIcon;
             flashCount++;
 
-            if (flashCount >= 4) // 2 flashes
+            if (flashCount >= 2) // 1 flashes
             {
                 flashTimer.Stop();
                 trayIcon.Icon = originalIcon;
