@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11218.70 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioRec", "AudioRec\AudioRec.csproj", "{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}"
 EndProject
@@ -9,24 +9,48 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BranchMerger", "BranchMerge
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenCapture", "ScreenCapture\ScreenCapture.csproj", "{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenRec", "ScreenRec\ScreenRec.csproj", "{9C24BD84-B209-43A3-BB66-1CD21C88CE60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Debug|x64.Build.0 = Debug|Any CPU
 		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Release|x64.ActiveCfg = Release|Any CPU
+		{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}.Release|x64.Build.0 = Release|Any CPU
 		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Debug|x64.Build.0 = Debug|Any CPU
 		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Release|x64.ActiveCfg = Release|Any CPU
+		{B8E62342-15C0-69FD-8F10-EF3136A1FAFB}.Release|x64.Build.0 = Release|Any CPU
 		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Debug|x64.Build.0 = Debug|Any CPU
 		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}.Release|x64.Build.0 = Release|Any CPU
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Debug|x64.ActiveCfg = Debug|x64
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Debug|x64.Build.0 = Debug|x64
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|x64.ActiveCfg = Release|x64
+		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
