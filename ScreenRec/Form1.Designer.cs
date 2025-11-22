@@ -76,8 +76,7 @@
             Controls.Add(btnStart);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
-            Text = "Form1";
-            FormClosing += Form1_FormClosing;
+            Text = "Form1";            
             ResumeLayout(false);
         }
 

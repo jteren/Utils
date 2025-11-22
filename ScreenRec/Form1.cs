@@ -6,11 +6,6 @@ namespace ScreenRec
 {
     public partial class Form1 : Form
     {
-        // NOTE: Do not declare another NotifyIcon/ContextMenuStrip here if the designer already added them.
-        // The designer-generated partial class likely already contains fields named `trayIcon` and `trayMenu`.
-        //private NotifyIcon trayIcon;
-        //private ContextMenuStrip trayMenu;
-
         private GlobalKeyboardHook _keyboardHook;
         public CancellationTokenSource cts;
 
@@ -19,15 +14,14 @@ namespace ScreenRec
         {
             // Ensure designer components are created before we reference them
             InitializeComponent();
-
-            // Reuse designer components if present, otherwise create them.
+                        
             if (trayMenu == null)
             {
                 trayMenu = new ContextMenuStrip();
             }
             else
             {
-                trayMenu.Items.Clear(); // avoid duplicate menu items
+                trayMenu.Items.Clear(); 
             }
 
             // Add only the needed menu items
@@ -39,9 +33,7 @@ namespace ScreenRec
             }
 
             trayIcon.Text = "ScreenRec";
-
-            // If an icon is already set by the designer (e.g. custom monitor.ico), keep it.
-            // Otherwise, try to load a bundled monitor.ico or fallback to Application icon.
+                        
             if (trayIcon.Icon == null)
             {
                 try
@@ -50,12 +42,12 @@ namespace ScreenRec
                     if (File.Exists("monitor.ico"))
                     {
                         trayIcon.Icon = new Icon("monitor.ico");
-                      }
+                    }
                     else
                     {
                         // Fallback to default
                         trayIcon.Icon = SystemIcons.Application;
-                      }
+                    }
                 }
                 catch
                 {
@@ -93,9 +85,7 @@ namespace ScreenRec
             trayIcon.Visible = false; // clean up
             Application.Exit();
         }
-
-        // start program minimized to tray and create hook to start/stop recording with Pause/Break key
-
+                
         private void btnStart_Click(object sender, EventArgs e)
         {
             StartRecording();
@@ -107,12 +97,12 @@ namespace ScreenRec
 
             var options = RecorderOptions.DefaultMainMonitor;
             string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string path = Path.Combine(desktop, $"Capture_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
+            string path = Path.Combine(desktop, $"SR_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
             options.OutputOptions.RecorderMode = RecorderMode.Video;
             options.OutputOptions.OutputFrameSize = new ScreenSize(2560, 1440);
             options.OutputOptions.Stretch = StretchMode.Uniform; // or StretchMode.Fill, StretchMode.UniformToFill                       
             options.VideoEncoderOptions.Framerate = 20;
-            options.VideoEncoderOptions.Bitrate = 12_000_000; // 8 Mbps
+            options.VideoEncoderOptions.Bitrate = 12_000_000; // 8 Mbps MINIMUM for 1440p
             options.VideoEncoderOptions.IsHardwareEncodingEnabled = true;
             options.VideoEncoderOptions.Quality = 80;
             options.AudioOptions.IsAudioEnabled = true;
@@ -169,11 +159,6 @@ namespace ScreenRec
         {
             _keyboardHook.Unhook();
             base.OnFormClosing(e);
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            
-        }
+        }                
     }
 }

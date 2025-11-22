@@ -34,7 +34,7 @@
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(384, 60);
             Name = "Form1";
             Text = "ScreenCapture";
             ResumeLayout(false);
