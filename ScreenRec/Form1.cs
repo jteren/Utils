@@ -1,6 +1,5 @@
 using ScreenRecorderLib;
 using System.Reflection;
-using System.Drawing;
 
 namespace ScreenRec
 {
@@ -8,8 +7,11 @@ namespace ScreenRec
     {
         private GlobalKeyboardHook _keyboardHook;
         public CancellationTokenSource cts;
-
         private Recorder _rec;
+
+        const int screenWidth = 3840;
+        const int screenHeight = 2160;
+
         public Form1()
         {
             // Ensure designer components are created before we reference them
@@ -99,10 +101,10 @@ namespace ScreenRec
             string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string path = Path.Combine(desktop, $"SR_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.mp4");
             options.OutputOptions.RecorderMode = RecorderMode.Video;
-            options.OutputOptions.OutputFrameSize = new ScreenSize(2560, 1440);
+            options.OutputOptions.OutputFrameSize = new ScreenSize(screenWidth, screenHeight);
             options.OutputOptions.Stretch = StretchMode.Uniform; // or StretchMode.Fill, StretchMode.UniformToFill                       
             options.VideoEncoderOptions.Framerate = 20;
-            options.VideoEncoderOptions.Bitrate = 12_000_000; // 8 Mbps MINIMUM for 1440p
+            options.VideoEncoderOptions.Bitrate = 20_000_000; // 8 Mbps MINIMUM for 1440p, use 12
             options.VideoEncoderOptions.IsHardwareEncodingEnabled = true;
             options.VideoEncoderOptions.Quality = 80;
             options.AudioOptions.IsAudioEnabled = true;
@@ -126,8 +128,8 @@ namespace ScreenRec
             }
 
             TrySetEncoderProperty(options.VideoEncoderOptions.Encoder, "Profile", H264Profile.Main);
-            TrySetEncoderProperty(options.VideoEncoderOptions.Encoder, "TargetWidth", 2560);
-            TrySetEncoderProperty(options.VideoEncoderOptions.Encoder, "TargetHeight", 1440);
+            TrySetEncoderProperty(options.VideoEncoderOptions.Encoder, "TargetWidth", screenWidth);
+            TrySetEncoderProperty(options.VideoEncoderOptions.Encoder, "TargetHeight", screenHeight);
 
             _rec = Recorder.CreateRecorder(options);
             cts = new CancellationTokenSource();
@@ -148,7 +150,6 @@ namespace ScreenRec
         public void StopRecording()
         {
             _rec?.Stop();
-
             if (cts == null) return;
             cts.Cancel();
             cts.Dispose();
