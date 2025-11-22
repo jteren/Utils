@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="monitor.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="monitor.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ScreenRecorderLib" Version="6.5.1" />
   </ItemGroup>
 

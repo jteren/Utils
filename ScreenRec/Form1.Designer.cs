@@ -28,13 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             btnStart = new Button();
             btnStop = new Button();
+            trayIcon = new NotifyIcon(components);
+            trayMenu = new ContextMenuStrip(components);
             SuspendLayout();
             // 
             // btnStart
             // 
-            btnStart.Location = new Point(152, 116);
+            btnStart.Location = new Point(12, 12);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(205, 123);
             btnStart.TabIndex = 0;
@@ -44,7 +48,7 @@
             // 
             // btnStop
             // 
-            btnStop.Location = new Point(387, 116);
+            btnStop.Location = new Point(223, 12);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(202, 123);
             btnStop.TabIndex = 1;
@@ -52,15 +56,28 @@
             btnStop.UseVisualStyleBackColor = true;
             btnStop.Click += btnStop_Click;
             // 
+            // trayIcon
+            // 
+            trayIcon.Icon = (Icon)resources.GetObject("trayIcon.Icon");
+            trayIcon.Visible = true;
+            // 
+            // trayMenu
+            // 
+            trayMenu.ImageScalingSize = new Size(24, 24);
+            trayMenu.Name = "trayMenu";
+            trayMenu.Size = new Size(61, 4);
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(451, 157);
             Controls.Add(btnStop);
             Controls.Add(btnStart);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             Text = "Form1";
+            FormClosing += Form1_FormClosing;
             ResumeLayout(false);
         }
 
@@ -68,5 +85,7 @@
 
         private Button btnStart;
         private Button btnStop;
+        private NotifyIcon trayIcon;
+        private ContextMenuStrip trayMenu;
     }
 }
