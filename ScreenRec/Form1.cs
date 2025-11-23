@@ -133,8 +133,8 @@ namespace ScreenRec
 
             _rec = Recorder.CreateRecorder(options);
             cts = new CancellationTokenSource();
-            _rec.OnRecordingComplete += (s, ev) => { MessageBox.Show($"Saved: {ev.FilePath}"); };
-            _rec.OnRecordingFailed += (s, ev) => { MessageBox.Show($"Recording error: {ev.Error}"); };
+            //_rec.OnRecordingComplete += (s, ev) => { MessageBox.Show($"Saved: {ev.FilePath}"); };
+            //_rec.OnRecordingFailed += (s, ev) => { MessageBox.Show($"Recording error: {ev.Error}"); };
 
             if (!cts.Token.IsCancellationRequested)
             {
