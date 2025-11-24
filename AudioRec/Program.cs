@@ -17,7 +17,7 @@ namespace AudioRec
             if (!createdNew)
             {
                 // Another instance is already running
-                MessageBox.Show("AudioRec is already running.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // MessageBox.Show("AudioRec is already running.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
