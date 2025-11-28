@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 namespace ScreenCapture
@@ -183,9 +184,14 @@ namespace ScreenCapture
                 {
                     try
                     {
-                        string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
+                        string filename = $"screenshot_{DateTime.Now:yyyyMMdd_HHmmss_fff}.jpg";
                         string path = Path.Combine(folder, filename);
-                        bmp.Save(path);
+
+                        var encoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(c => c.FormatID == ImageFormat.Jpeg.Guid);
+                        var encoderParams = new EncoderParameters(1);
+                        encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 90L); // 0–100
+                        bmp.Save(path, encoder, encoderParams);
+                        //bmp.Save(path, ImageFormat.Jpeg);
                         bmp.Dispose();
                         Console.WriteLine($"Saved: {path}");
                     }
