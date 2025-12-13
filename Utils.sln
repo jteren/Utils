@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11218.70 d18.3
+VisualStudioVersion = 18.3.11218.70
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioRec", "AudioRec\AudioRec.csproj", "{E8B4CDEA-C7B8-B212-DA8A-A03E3E598EF9}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenCapture", "ScreenCapture\ScreenCapture.csproj", "{A0144646-E383-CCDE-E8F8-F7FBC1DD88E3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenRec", "ScreenRec\ScreenRec.csproj", "{9C24BD84-B209-43A3-BB66-1CD21C88CE60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLEventProfiler", "SQLEventProfiler\SQLEventProfiler.csproj", "{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|x64.ActiveCfg = Release|x64
 		{9C24BD84-B209-43A3-BB66-1CD21C88CE60}.Release|x64.Build.0 = Release|x64
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Debug|x64.Build.0 = Debug|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Release|x64.ActiveCfg = Release|Any CPU
+		{EA1C43A4-3C3B-4D1D-AF8A-B5514ADE2343}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
