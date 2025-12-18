@@ -63,6 +63,7 @@
             // 
             // btnStart
             // 
+            btnStart.Font = new Font("Exo 2", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnStart.Location = new Point(418, 25);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(434, 129);
@@ -73,6 +74,7 @@
             // 
             // btnStop
             // 
+            btnStop.Font = new Font("Exo 2", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnStop.Location = new Point(418, 160);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(434, 129);
