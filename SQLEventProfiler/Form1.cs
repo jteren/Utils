@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.XEvent.XELite;
 using System.Text;
 using Timer = System.Windows.Forms.Timer;
 
@@ -7,12 +8,16 @@ namespace SQLEventProfiler
     public partial class Form1 : Form
     {
         private CancellationTokenSource cts;
-        private DateTime lastTimestamp = DateTime.MinValue;                   
-        string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.txt");             
-        private const string sessionName = "jantest_session";
-        string connString = String.Empty;
-        string localServerName = Environment.MachineName;
-        bool validConnection = true;
+        private Task readTask;
+        private StreamWriter logWriter;
+
+        private string localServerName = Environment.MachineName;
+        private const string sessionName = "jantest_session123";
+
+        private bool validConnection = true;
+        private string connString = String.Empty;
+        private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");             
+        
         private Timer statusTimer;
         private int spinnerIndex = 0;
         private readonly string[] spinnerFrames = { "", ">", ">>", ">>>", ">>>>" };
@@ -27,7 +32,7 @@ namespace SQLEventProfiler
 
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
-            statusTimer.Tick += StatusTimer_Tick;            
+            statusTimer.Tick += StatusTimer_Tick;                        
         }
 
         private void StatusTimer_Tick(object sender, EventArgs e)
@@ -40,13 +45,14 @@ namespace SQLEventProfiler
         {
             cbxServer.Items.Clear();
             cbxServer.Items.Add($"{localServerName}");
-            cbxServer.Items.Add("Server2");
+            cbxServer.Items.Add("dev-test-02");
+            cbxServer.Items.Add("dev-test-03");
         }
 
         private void PopulateAuthTypes()
         {
             cbxAuthenticationType.Items.Clear();
-            cbxAuthenticationType.Items.Add("Windows Authentication");
+            //cbxAuthenticationType.Items.Add("Windows Authentication");
             cbxAuthenticationType.Items.Add("SQL Server");
         }
 
@@ -60,21 +66,12 @@ namespace SQLEventProfiler
 
         private string BuildConnectionString()
         {
+            return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+
             var sb = new StringBuilder();
-
             var server = cbxServer.SelectedItem.ToString();
-
             sb.Append($"Server={server};Database=master;TrustServerCertificate=True;Connect Timeout=2;");
-
-            if (server == $"{localServerName}")
-            {
-                sb.Append("Integrated Security=True;");
-            }
-            else
-            {
-                sb.Append($"User ID={txtUserToLog.Text};Password={txtPassword.Text};");
-            }
-
+            sb.Append($"User ID={txtUserName.Text.Trim()};Password={txtPassword.Text.Trim()};");            
             return sb.ToString();
         }
 
@@ -100,12 +97,10 @@ namespace SQLEventProfiler
             {
                 txtUserToLog.Enabled = true;
             }
-
-            if (cbxAuthenticationType.SelectedIndex != 0)
-            {
-                txtUserName.Enabled = true;
-                txtPassword.Enabled = true;
-            }
+            
+            txtUserName.Enabled = true;
+            txtPassword.Enabled = true;
+            
         }
 
         #region Event Handlers
@@ -113,21 +108,12 @@ namespace SQLEventProfiler
         private void cbxServer_SelectedIndexChanged(object sender, EventArgs e)
         {
             var server = cbxServer.SelectedItem.ToString();
-
-            if (server == $"{localServerName}")
-            {
+                       
                 cbxAuthenticationType.SelectedIndex = 0;
-                txtUserName.Enabled = false;
-                txtPassword.Enabled = false;
-            }
-            else
-            {
-                cbxAuthenticationType.SelectedIndex = 1;
                 txtUserName.Enabled = true;
                 txtUserName.Text = "sa";
                 txtPassword.Enabled = true;
-                txtPassword.Text = "ParXXXXX"; // or HooXXXXX
-            }
+                txtPassword.Text = "ParisXXXXX";             
 
             connString = BuildConnectionString();
         }
@@ -139,23 +125,16 @@ namespace SQLEventProfiler
 
         private void cbxAuthenticationType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cbxAuthenticationType.SelectedItem.ToString() == "Windows Authentication")
-            {
-                txtUserName.Enabled = false;
-                txtPassword.Enabled = false;
-            }
-            else
-            {
-                txtUserName.Enabled = true;
-
-                txtPassword.Enabled = true;
-            }
+            
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
             LockControls();
             stsStatusLabel.Text = " Connecting...";
+
+            string connectionString =
+                "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
 
             try
             {
@@ -187,17 +166,94 @@ namespace SQLEventProfiler
                 return;
             }
 
-            btnStop.Enabled = true;
-
             cts = new CancellationTokenSource();
+            var xeStream = new XELiveEventStreamer(connectionString, $"{sessionName}");
+
+            btnStop.Enabled = true;
             stsStatusLabel.Text = " Running... ";
 
             spinnerIndex = 0;
             statusTimer.Start();
 
-            await Task.Run(() => PollRingBuffer(cts.Token));
+            try
+            {
+                readTask = xeStream.ReadEventStream(
+                    xevent =>
+                    {
+                        xevent.Fields.TryGetValue("batch_text", out var bt);
+                        xevent.Fields.TryGetValue("statement", out var st);
+                        xevent.Fields.TryGetValue("object_name", out var on);
+
+                        var batchText = bt?.ToString();
+                        var statementText = st?.ToString();
+                        var objectName = on?.ToString();
+
+                        var textToShow = !string.IsNullOrWhiteSpace(batchText)
+                            ? batchText
+                            : !string.IsNullOrWhiteSpace(statementText)
+                                ? statementText
+                                : objectName;
+
+                        string logEntry =
+                          $"{Environment.NewLine}-- {xevent.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
+                          $"{xevent.Actions.GetValueOrDefault("database_name")} | " +                          
+                          $"{xevent.Actions.GetValueOrDefault("username")}{Environment.NewLine}" +
+                          //$"{xevent.Name} | " +
+                          //$"  Host: {xevent.Actions.GetValueOrDefault("client_hostname")}{Environment.NewLine}" +
+                          $"  {textToShow.TrimEmptyLines()}";
+
+                        WriteLog(logEntry);
+
+                        return Task.CompletedTask;
+                    },
+                    cts.Token
+                );
+            }
+            catch (Exception ex)
+            {
+                UnlockControls();
+                MessageBox.Show($"Error reading event stream: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
+        private readonly object logLock = new object();
+
+        private void WriteLog(string message)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(logFile))
+                {
+                    return;
+                }
+
+                lock (logLock)
+                {
+                    if (logWriter == null)
+                    {                        
+                        var dir = Path.GetDirectoryName(logFile);
+                        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        // Open StreamWriter for append and use UTF8; AutoFlush ensures data is written promptly.
+                        logWriter = new StreamWriter(logFile, append: true, encoding: Encoding.UTF8)
+                        {
+                            AutoFlush = true
+                        };
+                    }
+                    
+                    logWriter.WriteLine(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't throw from logging; output to debug for diagnostics.
+                System.Diagnostics.Debug.WriteLine($"WriteLog error: {ex.Message}");
+            }
+        }
+                     
         private async void btnStop_Click(object sender, EventArgs e)
         {
             UnlockControls();
@@ -224,58 +280,12 @@ namespace SQLEventProfiler
             }
 
             cts?.Cancel();
+
+            logWriter?.Dispose();
+            logWriter = null;
         }
 
         #endregion
-
-        private void PollRingBuffer(CancellationToken token)
-        {
-            // ev.value('(action[@name=""client_app_name""]/value)[1]', 'nvarchar(128)') AS client_app_name
-            string query = $@"
-                WITH Events AS (
-                    SELECT
-                        ev.value('@name','varchar(50)') AS event_name,
-                        ev.value('@timestamp','datetime') AS event_time,
-                        ev.value('(data[@name=""batch_text""]/value)[1]','nvarchar(max)') AS batch_text,
-                        ev.value('(action[@name=""database_name""]/value)[1]','nvarchar(128)') AS database_name,
-                        ev.value('(action[@name=""username""]/value)[1]','nvarchar(128)') AS username,
-                        ev.value('(action[@name=""client_hostname""]/value)[1]','nvarchar(128)') AS client_hostname                        
-                    FROM (
-                        SELECT CAST(target_data AS XML) AS td
-                        FROM sys.dm_xe_session_targets st
-                        JOIN sys.dm_xe_sessions s ON s.address = st.event_session_address
-                        WHERE st.target_name = 'ring_buffer'
-                          AND s.name = '{sessionName}'
-                    ) rb
-                    CROSS APPLY rb.td.nodes('//RingBufferTarget/event') AS T(ev)
-                )
-                SELECT TOP 20 *
-                FROM Events
-                ORDER BY event_time DESC;";
-
-            using (var conn = new SqlConnection(connString))
-            {
-                conn.Open();
-                while (!token.IsCancellationRequested)
-                {
-                    using (var cmd = new SqlCommand(query, conn))
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            DateTime ts = reader.GetDateTime(reader.GetOrdinal("event_time"));
-                            if (ts > lastTimestamp)
-                            {
-                                string line = $"{ts:yyyy-MM-dd HH:mm:ss} | {reader["database_name"]} | {reader["username"]} | {System.Environment.NewLine} {reader["batch_text"].ToString().Trim()} {System.Environment.NewLine}";
-                                File.AppendAllText(logFile, line + Environment.NewLine);
-                                lastTimestamp = ts;
-                            }
-                        }
-                    }
-                    Thread.Sleep(3000);
-                }
-            }
-        }
 
         private void EnsureSessionExistsAndStarted(SqlConnection conn)
         {
@@ -289,7 +299,7 @@ namespace SQLEventProfiler
             else
             {
                 string userToLog = txtUserToLog.Text.Trim();
-                additionalFilter = $"AND (sqlserver.username = N'{userToLog}')";
+                additionalFilter = $"AND (sqlserver.username LIKE N'%{userToLog}%')";
             }
 
             string checkSql = $@"
@@ -301,6 +311,10 @@ namespace SQLEventProfiler
                 (
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
                     WHERE (batch_text NOT LIKE '%FROM sys.objects%')
+                    AND (batch_text <> 'select @@trancount')
+                    AND (batch_text <> 'SET NOEXEC, PARSEONLY, FMTONLY OFF')
+                    AND (batch_text NOT LIKE 'SET SHOWPLAN%')                    
+                    AND (batch_text <> 'SELECT dtb.name AS [Name], dtb.state AS [State] FROM master.sys.databases dtb')
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%')
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
@@ -312,7 +326,10 @@ namespace SQLEventProfiler
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
                     WHERE (statement NOT LIKE '%sp_help%')
                     AND (statement NOT LIKE '%sp_reset_connection%')
-                    AND (statement NOT LIKE '%master.sys.databases%')
+                    AND (statement NOT LIKE '%master.sys.databases%')   
+                    AND (statement NOT LIKE '%DECLARE @edition sysname%')   
+                    AND (statement NOT LIKE '%SERVERPROPERTY%')   
+                    AND (statement NOT LIKE '%from master.sys.master_files%')   
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%') 
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
@@ -346,8 +363,7 @@ namespace SQLEventProfiler
             {
                 cmd.ExecuteNonQuery();
             }
-        }
-             
+        }             
 
         private void btnSelectFile_Click(object sender, EventArgs e)
         {
@@ -363,6 +379,28 @@ namespace SQLEventProfiler
                     logFile = selectedFile;
                 }
             }
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static string TrimEmptyLines(this string input)
+        {
+            if (input == null) return null;
+                        
+            var lines = input.Split(new[] { "\r\n", "\r", "\n", Environment.NewLine }, StringSplitOptions.None);
+
+            int start = 0;
+            while (start < lines.Length && string.IsNullOrWhiteSpace(lines[start]))
+                start++;
+
+            int end = lines.Length - 1;
+            while (end >= start && string.IsNullOrWhiteSpace(lines[end]))
+                end--;
+
+            if (start > end) return string.Empty; 
+
+            return string.Join(Environment.NewLine, lines.AsSpan(start, end - start + 1).ToArray());
         }
     }
 }

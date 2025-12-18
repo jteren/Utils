@@ -178,7 +178,7 @@
             txtLogFile.Name = "txtLogFile";
             txtLogFile.PlaceholderText = "Select a file...";
             txtLogFile.Size = new Size(431, 37);
-            txtLogFile.TabIndex = 12;           
+            txtLogFile.TabIndex = 12;
             // 
             // lblLogFile
             // 
@@ -216,7 +216,7 @@
             Controls.Add(btnStart);
             Controls.Add(cbxServer);
             Name = "Form1";
-            Text = "SQL Event Profiler";
+            Text = "XE Profiler";
             FormClosing += Form1_FormClosing;
             stsStatus.ResumeLayout(false);
             stsStatus.PerformLayout();
