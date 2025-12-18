@@ -38,6 +38,7 @@
             txtUserToLog = new TextBox();
             cbxThisMachine = new CheckBox();
             grpAuthentication = new GroupBox();
+            btnPasswordSwapper = new Button();
             txtPassword = new TextBox();
             txtUserName = new TextBox();
             cbxAuthenticationType = new ComboBox();
@@ -137,6 +138,7 @@
             // 
             // grpAuthentication
             // 
+            grpAuthentication.Controls.Add(btnPasswordSwapper);
             grpAuthentication.Controls.Add(txtPassword);
             grpAuthentication.Controls.Add(txtUserName);
             grpAuthentication.Controls.Add(cbxAuthenticationType);
@@ -146,6 +148,17 @@
             grpAuthentication.TabIndex = 11;
             grpAuthentication.TabStop = false;
             grpAuthentication.Text = "Authentication";
+            // 
+            // btnPasswordSwapper
+            // 
+            btnPasswordSwapper.BackgroundImage = Properties.Resources.arrows;
+            btnPasswordSwapper.BackgroundImageLayout = ImageLayout.Zoom;
+            btnPasswordSwapper.Location = new Point(233, 129);
+            btnPasswordSwapper.Name = "btnPasswordSwapper";
+            btnPasswordSwapper.Size = new Size(65, 38);
+            btnPasswordSwapper.TabIndex = 3;
+            btnPasswordSwapper.UseVisualStyleBackColor = true;
+            btnPasswordSwapper.Click += btnPasswordSwapper_Click;
             // 
             // txtPassword
             // 
@@ -247,5 +260,6 @@
         private TextBox txtLogFile;
         private Label lblLogFile;
         private Button btnSelectFile;
+        private Button btnPasswordSwapper;
     }
 }

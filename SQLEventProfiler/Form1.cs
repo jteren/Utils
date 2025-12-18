@@ -16,8 +16,8 @@ namespace SQLEventProfiler
 
         private bool validConnection = true;
         private string connString = String.Empty;
-        private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");             
-        
+        private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");
+
         private Timer statusTimer;
         private int spinnerIndex = 0;
         private readonly string[] spinnerFrames = { "", ">", ">>", ">>>", ">>>>" };
@@ -32,7 +32,7 @@ namespace SQLEventProfiler
 
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
-            statusTimer.Tick += StatusTimer_Tick;                        
+            statusTimer.Tick += StatusTimer_Tick;
         }
 
         private void StatusTimer_Tick(object sender, EventArgs e)
@@ -71,7 +71,7 @@ namespace SQLEventProfiler
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
             sb.Append($"Server={server};Database=master;TrustServerCertificate=True;Connect Timeout=2;");
-            sb.Append($"User ID={txtUserName.Text.Trim()};Password={txtPassword.Text.Trim()};");            
+            sb.Append($"User ID={txtUserName.Text.Trim()};Password={txtPassword.Text.Trim()};");
             return sb.ToString();
         }
 
@@ -84,6 +84,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = false;
             txtPassword.Enabled = false;
             btnStart.Enabled = false;
+            btnPasswordSwapper.Enabled = false;
         }
         private void UnlockControls()
         {
@@ -97,10 +98,11 @@ namespace SQLEventProfiler
             {
                 txtUserToLog.Enabled = true;
             }
-            
+
             txtUserName.Enabled = true;
             txtPassword.Enabled = true;
-            
+            btnPasswordSwapper.Enabled = true;
+
         }
 
         #region Event Handlers
@@ -108,12 +110,12 @@ namespace SQLEventProfiler
         private void cbxServer_SelectedIndexChanged(object sender, EventArgs e)
         {
             var server = cbxServer.SelectedItem.ToString();
-                       
-                cbxAuthenticationType.SelectedIndex = 0;
-                txtUserName.Enabled = true;
-                txtUserName.Text = "sa";
-                txtPassword.Enabled = true;
-                txtPassword.Text = "ParisXXXXX";             
+
+            cbxAuthenticationType.SelectedIndex = 0;
+            txtUserName.Enabled = true;
+            txtUserName.Text = "sa";
+            txtPassword.Enabled = true;
+            txtPassword.Text = "ParisXXXXX";
 
             connString = BuildConnectionString();
         }
@@ -125,7 +127,7 @@ namespace SQLEventProfiler
 
         private void cbxAuthenticationType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
+
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
@@ -196,7 +198,7 @@ namespace SQLEventProfiler
 
                         string logEntry =
                           $"{Environment.NewLine}-- {xevent.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
-                          $"{xevent.Actions.GetValueOrDefault("database_name")} | " +                          
+                          $"{xevent.Actions.GetValueOrDefault("database_name")} | " +
                           $"{xevent.Actions.GetValueOrDefault("username")}{Environment.NewLine}" +
                           //$"{xevent.Name} | " +
                           //$"  Host: {xevent.Actions.GetValueOrDefault("client_hostname")}{Environment.NewLine}" +
@@ -230,7 +232,7 @@ namespace SQLEventProfiler
                 lock (logLock)
                 {
                     if (logWriter == null)
-                    {                        
+                    {
                         var dir = Path.GetDirectoryName(logFile);
                         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                         {
@@ -243,7 +245,7 @@ namespace SQLEventProfiler
                             AutoFlush = true
                         };
                     }
-                    
+
                     logWriter.WriteLine(message);
                 }
             }
@@ -253,7 +255,7 @@ namespace SQLEventProfiler
                 System.Diagnostics.Debug.WriteLine($"WriteLog error: {ex.Message}");
             }
         }
-                     
+
         private async void btnStop_Click(object sender, EventArgs e)
         {
             UnlockControls();
@@ -363,7 +365,7 @@ namespace SQLEventProfiler
             {
                 cmd.ExecuteNonQuery();
             }
-        }             
+        }
 
         private void btnSelectFile_Click(object sender, EventArgs e)
         {
@@ -378,6 +380,20 @@ namespace SQLEventProfiler
                     txtLogFile.Text = selectedFile;
                     logFile = selectedFile;
                 }
+            }
+        }
+
+        private void btnPasswordSwapper_Click(object sender, EventArgs e)
+        {
+            string currentPassword = txtPassword.Text;
+
+            if (string.Equals(currentPassword, "ParisXXXXX") || string.IsNullOrWhiteSpace(currentPassword))
+            {
+                txtPassword.Text = "Hoover";
+            }
+            else
+            {
+                txtPassword.Text = "ParisXXXXX";
             }
         }
     }
