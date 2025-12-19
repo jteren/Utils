@@ -14,7 +14,7 @@ namespace SQLEventProfiler
         private string localServerName = Environment.MachineName;
         private const string sessionName = "jantest_session123";
 
-        private bool validConnection = true;
+        private bool validConnection = false;
         private string connString = string.Empty;
         private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");
 
@@ -139,6 +139,7 @@ namespace SQLEventProfiler
                 {
                     await conn.OpenAsync();
                     EnsureSessionExistsAndStarted(conn);
+                    validConnection = true;
                 }
             }
             catch (SqlException ex)
@@ -319,7 +320,8 @@ namespace SQLEventProfiler
                     WHERE (batch_text NOT LIKE '%FROM sys.objects%')
                     AND (batch_text <> 'select @@trancount')
                     AND (batch_text <> 'SET NOEXEC, PARSEONLY, FMTONLY OFF')
-                    AND (batch_text NOT LIKE 'SET SHOWPLAN%')                    
+                    AND (batch_text NOT LIKE 'SET SHOWPLAN%')    
+                    AND (batch_text NOT LIKE '%SERVERPROPERTY%') 
                     AND (batch_text <> 'SELECT dtb.name AS [Name], dtb.state AS [State] FROM master.sys.databases dtb')
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%')
@@ -334,8 +336,16 @@ namespace SQLEventProfiler
                     AND (statement NOT LIKE '%sp_reset_connection%')
                     AND (statement NOT LIKE '%master.sys.databases%')   
                     AND (statement NOT LIKE '%DECLARE @edition sysname%')   
-                    AND (statement NOT LIKE '%SERVERPROPERTY%')   
-                    AND (statement NOT LIKE '%from master.sys.master_files%')   
+                    AND (statement NOT LIKE '%SERVERPROPERTY%') 
+                    AND (statement <> 'exec usp_GetSystemBranding')  
+                    AND (statement <> 'exec [dbo].[usp_GetMRIDocsConfig]')  
+                    AND (statement <> 'exec [Agora].[usp_AgoraGeneralSettings_Get]')  
+                    AND (statement NOT LIKE 'exec [dbo].[usp_Branding_IsDirty]%')  
+                    AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 
+                    AND (statement NOT LIKE 'exec [dbo].[usp_ProcessLoggedInUserRequest]%')  
+                    AND (statement NOT LIKE '%from master.sys.master_files%')  
+                    AND (statement NOT LIKE '%[Agora]%') 
+                    AND (statement NOT LIKE '%[eSightIdentityServer]%') 
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%') 
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
