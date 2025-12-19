@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             cbxServer = new ComboBox();
             btnStart = new Button();
             btnStop = new Button();
@@ -47,6 +48,7 @@
             lblLogFile = new Label();
             btnSelectFile = new Button();
             lblStopwatch = new Label();
+            mspMenu = new MenuStrip();
             stsStatus.SuspendLayout();
             groupBox1.SuspendLayout();
             grpAuthentication.SuspendLayout();
@@ -56,7 +58,7 @@
             // 
             cbxServer.DropDownStyle = ComboBoxStyle.DropDownList;
             cbxServer.FormattingEnabled = true;
-            cbxServer.Location = new Point(31, 55);
+            cbxServer.Location = new Point(31, 77);
             cbxServer.Name = "cbxServer";
             cbxServer.Size = new Size(326, 38);
             cbxServer.TabIndex = 0;
@@ -65,7 +67,7 @@
             // btnStart
             // 
             btnStart.Font = new Font("Exo 2", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnStart.Location = new Point(418, 25);
+            btnStart.Location = new Point(418, 47);
             btnStart.Name = "btnStart";
             btnStart.Size = new Size(434, 129);
             btnStart.TabIndex = 1;
@@ -76,7 +78,7 @@
             // btnStop
             // 
             btnStop.Font = new Font("Exo 2", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnStop.Location = new Point(418, 160);
+            btnStop.Location = new Point(418, 182);
             btnStop.Name = "btnStop";
             btnStop.Size = new Size(434, 129);
             btnStop.TabIndex = 2;
@@ -88,7 +90,7 @@
             // 
             lblServer.AutoSize = true;
             lblServer.Font = new Font("Segoe UI", 11F);
-            lblServer.Location = new Point(28, 25);
+            lblServer.Location = new Point(28, 47);
             lblServer.Name = "lblServer";
             lblServer.Size = new Size(76, 30);
             lblServer.TabIndex = 5;
@@ -96,24 +98,25 @@
             // 
             // stsStatus
             // 
+            stsStatus.AutoSize = false;
             stsStatus.ImageScalingSize = new Size(24, 24);
             stsStatus.Items.AddRange(new ToolStripItem[] { stsStatusLabel });
-            stsStatus.Location = new Point(0, 482);
+            stsStatus.Location = new Point(0, 501);
             stsStatus.Name = "stsStatus";
-            stsStatus.Size = new Size(864, 22);
+            stsStatus.Size = new Size(876, 38);
             stsStatus.TabIndex = 6;
             stsStatus.Text = "statusStrip1";
             // 
             // stsStatusLabel
             // 
             stsStatusLabel.Name = "stsStatusLabel";
-            stsStatusLabel.Size = new Size(0, 15);
+            stsStatusLabel.Size = new Size(0, 31);
             // 
             // groupBox1
             // 
             groupBox1.Controls.Add(txtUserToLog);
             groupBox1.Controls.Add(cbxThisMachine);
-            groupBox1.Location = new Point(31, 112);
+            groupBox1.Location = new Point(31, 134);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(326, 132);
             groupBox1.TabIndex = 7;
@@ -145,7 +148,7 @@
             grpAuthentication.Controls.Add(txtPassword);
             grpAuthentication.Controls.Add(txtUserName);
             grpAuthentication.Controls.Add(cbxAuthenticationType);
-            grpAuthentication.Location = new Point(28, 265);
+            grpAuthentication.Location = new Point(28, 287);
             grpAuthentication.Name = "grpAuthentication";
             grpAuthentication.Size = new Size(329, 186);
             grpAuthentication.TabIndex = 11;
@@ -190,7 +193,7 @@
             // txtLogFile
             // 
             txtLogFile.Enabled = false;
-            txtLogFile.Location = new Point(418, 394);
+            txtLogFile.Location = new Point(418, 416);
             txtLogFile.Name = "txtLogFile";
             txtLogFile.PlaceholderText = "Select a file...";
             txtLogFile.Size = new Size(431, 37);
@@ -200,7 +203,7 @@
             // 
             lblLogFile.AutoSize = true;
             lblLogFile.Font = new Font("Segoe UI", 11F);
-            lblLogFile.Location = new Point(418, 361);
+            lblLogFile.Location = new Point(418, 383);
             lblLogFile.Name = "lblLogFile";
             lblLogFile.Size = new Size(84, 30);
             lblLogFile.TabIndex = 13;
@@ -208,7 +211,7 @@
             // 
             // btnSelectFile
             // 
-            btnSelectFile.Location = new Point(803, 392);
+            btnSelectFile.Location = new Point(803, 414);
             btnSelectFile.Name = "btnSelectFile";
             btnSelectFile.Size = new Size(46, 39);
             btnSelectFile.TabIndex = 15;
@@ -222,17 +225,26 @@
             lblStopwatch.BackColor = Color.White;
             lblStopwatch.Font = new Font("Exo 2", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblStopwatch.ForeColor = Color.DarkGray;
-            lblStopwatch.Location = new Point(568, 116);
+            lblStopwatch.Location = new Point(568, 138);
             lblStopwatch.Name = "lblStopwatch";
             lblStopwatch.Size = new Size(133, 32);
             lblStopwatch.TabIndex = 16;
             lblStopwatch.Text = "00:00:00:00";
             // 
+            // mspMenu
+            // 
+            mspMenu.ImageScalingSize = new Size(24, 24);
+            mspMenu.Location = new Point(0, 0);
+            mspMenu.Name = "mspMenu";
+            mspMenu.Size = new Size(876, 24);
+            mspMenu.TabIndex = 17;
+            mspMenu.Text = "menuStrip1";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(864, 504);
+            ClientSize = new Size(876, 539);
             Controls.Add(lblStopwatch);
             Controls.Add(btnSelectFile);
             Controls.Add(lblLogFile);
@@ -240,10 +252,13 @@
             Controls.Add(grpAuthentication);
             Controls.Add(groupBox1);
             Controls.Add(stsStatus);
+            Controls.Add(mspMenu);
             Controls.Add(lblServer);
             Controls.Add(btnStop);
             Controls.Add(btnStart);
             Controls.Add(cbxServer);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = mspMenu;
             Name = "Form1";
             Text = "XE Profiler";
             FormClosing += Form1_FormClosing;
@@ -278,5 +293,6 @@
         private Button btnSelectFile;
         private Button btnPasswordSwapper;
         private Label lblStopwatch;
+        private MenuStrip mspMenu;
     }
 }

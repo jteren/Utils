@@ -6,7 +6,17 @@ using Timer = System.Windows.Forms.Timer;
 namespace SQLEventProfiler
 {
     public partial class Form1 : Form
-    {
+    {   
+        private class Schema
+        {
+            public string MenuText { get; set; }
+            public string SchemaName { get; set; }
+            public bool IsIgnored { get; set; }
+        }
+
+        private ToolStripMenuItem identityItem;
+        private ToolStripMenuItem agoraItem;
+
         private CancellationTokenSource cts;
         private Task readTask;
         private StreamWriter logWriter;
@@ -23,8 +33,15 @@ namespace SQLEventProfiler
 
         private Timer statusTimer;
         private int spinnerIndex = 0;
-        private readonly string[] spinnerFrames = { "", ">", ">>", ">>>", ">>>>" };
+        private readonly string[] spinnerFrames = { "Running...", "", "Running...", "" };
 
+        private List<Schema> schemas = new List<Schema>
+        {
+            new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
+            new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
+            
+        };
+        
         public Form1()
         {
             InitializeComponent();
@@ -40,14 +57,12 @@ namespace SQLEventProfiler
             timer = new Timer();
             timer.Interval = 10; // 10ms
             timer.Tick += Timer_Tick;
-
-
         }
 
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
             spinnerIndex = (spinnerIndex + 1) % spinnerFrames.Length;
-            stsStatusLabel.Text = $" Running... {spinnerFrames[spinnerIndex]}";            
+            stsStatusLabel.Text = $" {spinnerFrames[spinnerIndex]}";            
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -55,7 +70,6 @@ namespace SQLEventProfiler
             TimeSpan elapsed = DateTime.Now - startTime;
             lblStopwatch.Text = $"{elapsed:hh\\:mm\\:ss\\.ff}";
         }
-
 
         private void PopulateServerList()
         {
@@ -73,7 +87,38 @@ namespace SQLEventProfiler
         }
 
         private void SetControls()
-        {
+        {            
+            ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");
+            ToolStripMenuItem ignoreMenuItem = new ToolStripMenuItem("Ignore");
+            ToolStripMenuItem helpMenuItem = new ToolStripMenuItem("Help");
+            
+            ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");            
+            
+            identityItem = new ToolStripMenuItem("Identity");
+            identityItem.CheckOnClick = true;
+            identityItem.Checked = true;
+
+            agoraItem = new ToolStripMenuItem("Agora");
+            agoraItem.CheckOnClick = true;
+            agoraItem.Checked = true;   
+
+            identityItem.CheckedChanged += Option_CheckedChanged;
+            agoraItem.CheckedChanged += Option_CheckedChanged;
+
+            exitItem.Click += (s, e) => this.Close();
+
+            fileMenuItem.DropDownItems.Add(exitItem);
+                        
+            ignoreMenuItem.DropDownItems.Add(identityItem);
+            ignoreMenuItem.DropDownItems.Add(agoraItem);
+                    
+            mspMenu.Items.Add(fileMenuItem);
+            mspMenu.Items.Add(ignoreMenuItem);
+            mspMenu.Items.Add(helpMenuItem);
+                        
+            this.MainMenuStrip = mspMenu;
+            this.Controls.Add(mspMenu);
+
             lblStopwatch.Visible = false;
             lblStopwatch.BackColor = ColorTranslator.FromHtml("#f9f9f9");
             lblStopwatch.ForeColor = ColorTranslator.FromHtml("#a0a0a0");
@@ -81,6 +126,23 @@ namespace SQLEventProfiler
             cbxThisMachine.Checked = true;
             btnStop.Enabled = false;
             txtLogFile.Text = logFile;
+        }
+                
+        private void Option_CheckedChanged(object sender, EventArgs e)
+        {
+            var item = sender as ToolStripMenuItem;
+            if (item != null)
+            {
+                string state = item.Checked ? "enabled" : "disabled";
+
+                var schema = schemas.FirstOrDefault(s => s.MenuText == item.Text);
+
+                if (schema != null) {
+                    schema.IsIgnored = item.Checked;
+                }
+                               
+                MessageBox.Show($"{item.Text} was {state}");
+            }
         }
 
         private string BuildConnectionString()
@@ -104,6 +166,8 @@ namespace SQLEventProfiler
             txtPassword.Enabled = false;
             btnStart.Enabled = false;
             btnPasswordSwapper.Enabled = false;
+            agoraItem.Enabled = false;
+            identityItem.Enabled = false;
         }
         private void UnlockControls()
         {
@@ -122,7 +186,8 @@ namespace SQLEventProfiler
             txtPassword.Enabled = true;
             btnPasswordSwapper.Enabled = true;
             lblStopwatch.Visible = false;
-
+            agoraItem.Enabled = true;
+            identityItem.Enabled = true;
         }
 
         #region Event Handlers
@@ -150,8 +215,7 @@ namespace SQLEventProfiler
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
-            LockControls();
-            stsStatusLabel.Image = SystemIcons.Error.ToBitmap();
+            LockControls();            
             stsStatusLabel.Text = " Connecting...";
             connString = BuildConnectionString();
 
@@ -202,7 +266,7 @@ namespace SQLEventProfiler
             var xeStream = new XELiveEventStreamer(connString, $"{sessionName}");
 
             btnStop.Enabled = true;
-            stsStatusLabel.Text = " Running... ";
+            stsStatusLabel.Text = "";// " Running... ";
 
             spinnerIndex = 0;
             statusTimer.Start();
@@ -293,7 +357,7 @@ namespace SQLEventProfiler
             statusTimer.Stop();
             timer.Stop();
             lblStopwatch.Text = "00:00:00.00";
-            stsStatusLabel.Text = "  Stopped";
+            stsStatusLabel.Text = " Stopped";
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -323,19 +387,30 @@ namespace SQLEventProfiler
 
         private void EnsureSessionExistsAndStarted(SqlConnection conn)
         {
-            string additionalFilter = "";
+            string userOrHostNameFilter = "";            
+            string schemaFilterBatch = "";
+            string schemaFilterRPC = "";
 
             if (cbxThisMachine.Checked)
             {
                 string machineName = Environment.MachineName;
-                additionalFilter = $"AND (sqlserver.client_hostname = N'{machineName}')";
+                userOrHostNameFilter = $"AND (sqlserver.client_hostname = N'{machineName}')";
             }
             else
             {
                 string userToLog = txtUserToLog.Text.Trim();
-                additionalFilter = $"AND (sqlserver.username LIKE N'%{userToLog}%')";
+                userOrHostNameFilter = $"AND (sqlserver.username LIKE N'%{userToLog}%')";
             }
 
+            foreach (var schema in schemas)
+            {
+                if (schema.IsIgnored)
+                {                    
+                    schemaFilterBatch += $" AND (batch_text NOT LIKE '%[{schema.SchemaName}]%')";
+                    schemaFilterRPC += $" AND (statement NOT LIKE '%[{schema.SchemaName}]%')";                                        
+                }
+            }
+                   
             string checkSql = $@"
             IF NOT EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = '{sessionName}')
             BEGIN
@@ -354,7 +429,8 @@ namespace SQLEventProfiler
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%')
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
                     AND (sqlserver.client_app_name <> 'SQLServerCEIP')
-                    {additionalFilter}
+                    {schemaFilterBatch}
+                    {userOrHostNameFilter}
                 ),
                 ADD EVENT sqlserver.rpc_completed
                 (
@@ -370,15 +446,14 @@ namespace SQLEventProfiler
                     AND (statement NOT LIKE 'exec [dbo].[usp_Branding_IsDirty]%')  
                     AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 
                     AND (statement NOT LIKE 'exec [dbo].[usp_ProcessLoggedInUserRequest]%')  
-                    AND (statement NOT LIKE '%from master.sys.master_files%')  
-                    AND (statement NOT LIKE '%[Agora]%') 
-                    AND (statement NOT LIKE '%[eSightIdentityServer]%') 
+                    AND (statement NOT LIKE '%from master.sys.master_files%')                      
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%') 
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
                     AND (sqlserver.client_app_name <> 'SQLServerCEIP')
-                    AND (sqlserver.client_app_name <> N'Microsoft SQL Server Management Studio')     
-                    {additionalFilter}
+                    AND (sqlserver.client_app_name <> N'Microsoft SQL Server Management Studio')
+                    {schemaFilterRPC}
+                    {userOrHostNameFilter}
                 )
                 ADD TARGET package0.ring_buffer;
             END
