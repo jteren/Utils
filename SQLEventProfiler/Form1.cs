@@ -28,8 +28,7 @@ namespace SQLEventProfiler
             PopulateServerList();
             PopulateAuthTypes();
             SetControls();
-            connString = BuildConnectionString();
-
+            
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
             statusTimer.Tick += StatusTimer_Tick;
@@ -115,9 +114,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtUserName.Text = "sa";
             txtPassword.Enabled = true;
-            txtPassword.Text = "Paris";
-
-            connString = BuildConnectionString();
+            txtPassword.Text = "Paris";                       
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -132,8 +129,9 @@ namespace SQLEventProfiler
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
-            LockControls();
+            LockControls();            
             stsStatusLabel.Text = " Connecting...";
+            connString = BuildConnectionString();
 
             try
             {
@@ -147,9 +145,17 @@ namespace SQLEventProfiler
             {
                 validConnection = false;
 
-                if (ex.Message.Contains("error occurred while establishing a connection"))
+                if (ex.Message.Contains("error occurred while establishing a connection", StringComparison.InvariantCultureIgnoreCase))                    
                 {
                     stsStatusLabel.Text = " Failed to connect.";
+                }
+                else if (ex.Message.Contains("Login failed for user", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    stsStatusLabel.Text = " Login failed.";
+                }
+                else
+                {
+                    stsStatusLabel.Text = " SQL Error";
                 }
                 SqlConnection.ClearAllPools();
 
@@ -161,6 +167,7 @@ namespace SQLEventProfiler
             catch (Exception ex)
             {
                 UnlockControls();
+                stsStatusLabel.Text = " Failed to connect.";
                 MessageBox.Show($"General error: {ex.Message}");
                 return;
             }
