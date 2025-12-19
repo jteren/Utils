@@ -46,6 +46,7 @@
             txtLogFile = new TextBox();
             lblLogFile = new Label();
             btnSelectFile = new Button();
+            lblStopwatch = new Label();
             stsStatus.SuspendLayout();
             groupBox1.SuspendLayout();
             grpAuthentication.SuspendLayout();
@@ -215,11 +216,24 @@
             btnSelectFile.UseVisualStyleBackColor = true;
             btnSelectFile.Click += btnSelectFile_Click;
             // 
+            // lblStopwatch
+            // 
+            lblStopwatch.AutoSize = true;
+            lblStopwatch.BackColor = Color.White;
+            lblStopwatch.Font = new Font("Exo 2", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblStopwatch.ForeColor = Color.DarkGray;
+            lblStopwatch.Location = new Point(568, 116);
+            lblStopwatch.Name = "lblStopwatch";
+            lblStopwatch.Size = new Size(133, 32);
+            lblStopwatch.TabIndex = 16;
+            lblStopwatch.Text = "00:00:00:00";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(864, 504);
+            Controls.Add(lblStopwatch);
             Controls.Add(btnSelectFile);
             Controls.Add(lblLogFile);
             Controls.Add(txtLogFile);
@@ -263,5 +277,6 @@
         private Label lblLogFile;
         private Button btnSelectFile;
         private Button btnPasswordSwapper;
+        private Label lblStopwatch;
     }
 }

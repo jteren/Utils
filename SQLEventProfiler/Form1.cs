@@ -18,6 +18,9 @@ namespace SQLEventProfiler
         private string connString = string.Empty;
         private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");
 
+        private Timer timer;
+        private DateTime startTime;
+
         private Timer statusTimer;
         private int spinnerIndex = 0;
         private readonly string[] spinnerFrames = { "", ">", ">>", ">>>", ">>>>" };
@@ -32,13 +35,27 @@ namespace SQLEventProfiler
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
             statusTimer.Tick += StatusTimer_Tick;
+
+            // Setup timer
+            timer = new Timer();
+            timer.Interval = 10; // 10ms
+            timer.Tick += Timer_Tick;
+
+
         }
 
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
             spinnerIndex = (spinnerIndex + 1) % spinnerFrames.Length;
-            stsStatusLabel.Text = $" Running... {spinnerFrames[spinnerIndex]}";
+            stsStatusLabel.Text = $" Running... {spinnerFrames[spinnerIndex]}";            
         }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan elapsed = DateTime.Now - startTime;
+            lblStopwatch.Text = $"{elapsed:hh\\:mm\\:ss\\.ff}";
+        }
+
 
         private void PopulateServerList()
         {
@@ -57,6 +74,9 @@ namespace SQLEventProfiler
 
         private void SetControls()
         {
+            lblStopwatch.Visible = false;
+            lblStopwatch.BackColor = ColorTranslator.FromHtml("#f9f9f9");
+            lblStopwatch.ForeColor = ColorTranslator.FromHtml("#a0a0a0");
             cbxServer.SelectedIndex = 0;
             cbxThisMachine.Checked = true;
             btnStop.Enabled = false;
@@ -65,7 +85,7 @@ namespace SQLEventProfiler
 
         private string BuildConnectionString()
         {
-            //return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+            return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
 
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
@@ -101,6 +121,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtPassword.Enabled = true;
             btnPasswordSwapper.Enabled = true;
+            lblStopwatch.Visible = false;
 
         }
 
@@ -129,7 +150,8 @@ namespace SQLEventProfiler
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
-            LockControls();            
+            LockControls();
+            stsStatusLabel.Image = SystemIcons.Error.ToBitmap();
             stsStatusLabel.Text = " Connecting...";
             connString = BuildConnectionString();
 
@@ -139,6 +161,9 @@ namespace SQLEventProfiler
                 {
                     await conn.OpenAsync();
                     EnsureSessionExistsAndStarted(conn);
+                    lblStopwatch.Visible = true;
+                    startTime = DateTime.Now;
+                    timer.Start();
                     validConnection = true;
                 }
             }
@@ -266,6 +291,8 @@ namespace SQLEventProfiler
             UnlockControls();
             StopSessionAndCleanup();
             statusTimer.Stop();
+            timer.Stop();
+            lblStopwatch.Text = "00:00:00.00";
             stsStatusLabel.Text = "  Stopped";
         }
 
