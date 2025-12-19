@@ -15,7 +15,7 @@ namespace SQLEventProfiler
         private const string sessionName = "jantest_session123";
 
         private bool validConnection = true;
-        private string connString = String.Empty;
+        private string connString = string.Empty;
         private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");
 
         private Timer statusTimer;
@@ -66,7 +66,7 @@ namespace SQLEventProfiler
 
         private string BuildConnectionString()
         {
-            return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+            //return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
 
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
@@ -115,7 +115,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtUserName.Text = "sa";
             txtPassword.Enabled = true;
-            txtPassword.Text = "ParisXXXXX";
+            txtPassword.Text = "Paris";
 
             connString = BuildConnectionString();
         }
@@ -134,9 +134,6 @@ namespace SQLEventProfiler
         {
             LockControls();
             stsStatusLabel.Text = " Connecting...";
-
-            string connectionString =
-                "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
 
             try
             {
@@ -169,7 +166,7 @@ namespace SQLEventProfiler
             }
 
             cts = new CancellationTokenSource();
-            var xeStream = new XELiveEventStreamer(connectionString, $"{sessionName}");
+            var xeStream = new XELiveEventStreamer(connString, $"{sessionName}");
 
             btnStop.Enabled = true;
             stsStatusLabel.Text = " Running... ";
@@ -387,13 +384,13 @@ namespace SQLEventProfiler
         {
             string currentPassword = txtPassword.Text;
 
-            if (string.Equals(currentPassword, "ParisXXXXX") || string.IsNullOrWhiteSpace(currentPassword))
+            if (string.Equals(currentPassword, "Paris") || string.IsNullOrWhiteSpace(currentPassword))
             {
                 txtPassword.Text = "Hoover";
             }
             else
             {
-                txtPassword.Text = "ParisXXXXX";
+                txtPassword.Text = "Paris";
             }
         }
     }
