@@ -1,12 +1,13 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.XEvent.XELite;
+using System.Diagnostics;
 using System.Text;
 using Timer = System.Windows.Forms.Timer;
 
 namespace SQLEventProfiler
 {
     public partial class Form1 : Form
-    {   
+    {
         private class Schema
         {
             public string MenuText { get; set; }
@@ -28,6 +29,8 @@ namespace SQLEventProfiler
         private string connString = string.Empty;
         private string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "XE_Log.sql");
 
+        private string filterFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "filters.txt");
+
         private Timer timer;
         private DateTime startTime;
 
@@ -35,19 +38,26 @@ namespace SQLEventProfiler
         private int spinnerIndex = 0;
         private readonly string[] spinnerFrames = { "Running...", "", "Running...", "" };
 
+        private List<string> dynamicFilters = new List<string>();
+
+        private FilterEditorForm filterEditor;
+
         private List<Schema> schemas = new List<Schema>
         {
             new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
             new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
-            
+
         };
-        
+
         public Form1()
         {
             InitializeComponent();
             PopulateServerList();
             PopulateAuthTypes();
             SetControls();
+
+            this.Move += Form1_Move;
+            LoadFiltersFromFile();
             
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
@@ -59,10 +69,44 @@ namespace SQLEventProfiler
             timer.Tick += Timer_Tick;
         }
 
+        private void LoadFiltersFromFile()
+        {
+            try
+            {
+                if (File.Exists(filterFilePath))
+                {
+                    dynamicFilters = File.ReadAllLines(filterFilePath)
+                        .Select(line => line.Trim())
+                        .Where(line => line.Length > 0)
+                        .ToList();
+                }
+            }
+            catch
+            {
+                dynamicFilters = new List<string>();
+            }
+        }
+
+        private void SaveFiltersToFile()
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(filterFilePath);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                File.WriteAllLines(filterFilePath, dynamicFilters);
+            }
+            catch
+            {
+                MessageBox.Show("Failed to save filters.");
+            }
+        }
+
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
             spinnerIndex = (spinnerIndex + 1) % spinnerFrames.Length;
-            stsStatusLabel.Text = $" {spinnerFrames[spinnerIndex]}";            
+            stsStatusLabel.Text = $" {spinnerFrames[spinnerIndex]}";
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -87,20 +131,20 @@ namespace SQLEventProfiler
         }
 
         private void SetControls()
-        {            
+        {
             ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");
             ToolStripMenuItem ignoreMenuItem = new ToolStripMenuItem("Ignore");
             ToolStripMenuItem helpMenuItem = new ToolStripMenuItem("Help");
-            
-            ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");            
-            
+
+            ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");
+
             identityItem = new ToolStripMenuItem("Identity");
             identityItem.CheckOnClick = true;
             identityItem.Checked = true;
 
             agoraItem = new ToolStripMenuItem("Agora");
             agoraItem.CheckOnClick = true;
-            agoraItem.Checked = true;   
+            agoraItem.Checked = true;
 
             identityItem.CheckedChanged += Option_CheckedChanged;
             agoraItem.CheckedChanged += Option_CheckedChanged;
@@ -108,14 +152,14 @@ namespace SQLEventProfiler
             exitItem.Click += (s, e) => this.Close();
 
             fileMenuItem.DropDownItems.Add(exitItem);
-                        
+
             ignoreMenuItem.DropDownItems.Add(identityItem);
             ignoreMenuItem.DropDownItems.Add(agoraItem);
-                    
+
             mspMenu.Items.Add(fileMenuItem);
             mspMenu.Items.Add(ignoreMenuItem);
             mspMenu.Items.Add(helpMenuItem);
-                        
+
             this.MainMenuStrip = mspMenu;
             this.Controls.Add(mspMenu);
 
@@ -126,8 +170,9 @@ namespace SQLEventProfiler
             cbxThisMachine.Checked = true;
             btnStop.Enabled = false;
             txtLogFile.Text = logFile;
+            chkClearLogBeforeStart.Checked = true;
         }
-                
+
         private void Option_CheckedChanged(object sender, EventArgs e)
         {
             var item = sender as ToolStripMenuItem;
@@ -137,17 +182,18 @@ namespace SQLEventProfiler
 
                 var schema = schemas.FirstOrDefault(s => s.MenuText == item.Text);
 
-                if (schema != null) {
+                if (schema != null)
+                {
                     schema.IsIgnored = item.Checked;
                 }
-                               
+
                 MessageBox.Show($"{item.Text} was {state}");
             }
         }
 
         private string BuildConnectionString()
         {
-            return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+            //return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
 
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
@@ -168,6 +214,7 @@ namespace SQLEventProfiler
             btnPasswordSwapper.Enabled = false;
             agoraItem.Enabled = false;
             identityItem.Enabled = false;
+            chkClearLogBeforeStart.Enabled = false;
         }
         private void UnlockControls()
         {
@@ -188,6 +235,7 @@ namespace SQLEventProfiler
             lblStopwatch.Visible = false;
             agoraItem.Enabled = true;
             identityItem.Enabled = true;
+            chkClearLogBeforeStart.Enabled = true;
         }
 
         #region Event Handlers
@@ -200,7 +248,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtUserName.Text = "sa";
             txtPassword.Enabled = true;
-            txtPassword.Text = "Paris";                       
+            txtPassword.Text = "Paris";
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -208,14 +256,9 @@ namespace SQLEventProfiler
             txtUserToLog.Enabled = !cbxThisMachine.Checked;
         }
 
-        private void cbxAuthenticationType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private async void btnStart_Click(object sender, EventArgs e)
-        {
-            LockControls();            
+        {            
+            LockControls();
             stsStatusLabel.Text = " Connecting...";
             connString = BuildConnectionString();
 
@@ -229,13 +272,33 @@ namespace SQLEventProfiler
                     startTime = DateTime.Now;
                     timer.Start();
                     validConnection = true;
+
+                    var nppPath = @"C:\Program Files\Notepad++\notepad++.exe";
+
+                    if (File.Exists(logFile))
+                    {
+                        if (chkClearLogBeforeStart.Checked)
+                        {
+                            File.WriteAllText(logFile, string.Empty);
+                        }
+
+                        if (File.Exists(nppPath))
+                            Process.Start(nppPath, logFile);
+                        else
+                            MessageBox.Show("Notepad++ not found.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("File does not exist.");
+                    }
+
                 }
             }
             catch (SqlException ex)
             {
                 validConnection = false;
 
-                if (ex.Message.Contains("error occurred while establishing a connection", StringComparison.InvariantCultureIgnoreCase))                    
+                if (ex.Message.Contains("error occurred while establishing a connection", StringComparison.InvariantCultureIgnoreCase))
                 {
                     stsStatusLabel.Text = " Failed to connect.";
                 }
@@ -290,6 +353,13 @@ namespace SQLEventProfiler
                                 ? statementText
                                 : objectName;
 
+                        if (ShouldIgnore(batchText) ||
+                            ShouldIgnore(statementText) ||
+                            ShouldIgnore(objectName))
+                        {
+                            return Task.CompletedTask;
+                        }
+
                         string logEntry =
                           $"{Environment.NewLine}-- {xevent.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
                           $"{xevent.Actions.GetValueOrDefault("database_name")} | " +
@@ -310,6 +380,20 @@ namespace SQLEventProfiler
                 UnlockControls();
                 MessageBox.Show($"Error reading event stream: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        bool ShouldIgnore(string sql)
+        {
+            if (string.IsNullOrWhiteSpace(sql))
+                return false;
+
+            foreach (var filter in dynamicFilters)
+            {
+                if (sql.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
         }
 
         private readonly object logLock = new object();
@@ -387,30 +471,20 @@ namespace SQLEventProfiler
 
         private void EnsureSessionExistsAndStarted(SqlConnection conn)
         {
-            string userOrHostNameFilter = "";            
-            string schemaFilterBatch = "";
-            string schemaFilterRPC = "";
+            string userOrHostNameFilter = "";
 
             if (cbxThisMachine.Checked)
             {
                 string machineName = Environment.MachineName;
-                userOrHostNameFilter = $"AND (sqlserver.client_hostname = N'{machineName}')";
+                userOrHostNameFilter = $" AND (sqlserver.client_hostname = N'{machineName}')";
             }
             else
             {
                 string userToLog = txtUserToLog.Text.Trim();
-                userOrHostNameFilter = $"AND (sqlserver.username LIKE N'%{userToLog}%')";
+                userOrHostNameFilter = $" AND (sqlserver.username LIKE N'%{userToLog}%')";
             }
 
-            foreach (var schema in schemas)
-            {
-                if (schema.IsIgnored)
-                {                    
-                    schemaFilterBatch += $" AND (batch_text NOT LIKE '%[{schema.SchemaName}]%')";
-                    schemaFilterRPC += $" AND (statement NOT LIKE '%[{schema.SchemaName}]%')";                                        
-                }
-            }
-                   
+
             string checkSql = $@"
             IF NOT EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = '{sessionName}')
             BEGIN
@@ -419,8 +493,9 @@ namespace SQLEventProfiler
                 ADD EVENT sqlserver.sql_batch_completed
                 (
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
-                    WHERE (batch_text NOT LIKE '%FROM sys.objects%')
-                    AND (batch_text <> 'select @@trancount')
+                    WHERE (batch_text NOT LIKE '%sys.objects%') 
+                    AND (batch_text NOT LIKE '%FROM sys.%')
+                    AND (batch_text <> 'select @@trancount')                                  
                     AND (batch_text <> 'SET NOEXEC, PARSEONLY, FMTONLY OFF')
                     AND (batch_text NOT LIKE 'SET SHOWPLAN%')    
                     AND (batch_text NOT LIKE '%SERVERPROPERTY%') 
@@ -428,31 +503,30 @@ namespace SQLEventProfiler
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%')
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
-                    AND (sqlserver.client_app_name <> 'SQLServerCEIP')
-                    {schemaFilterBatch}
+                    AND (sqlserver.client_app_name <> 'SQLServerCEIP')                    
                     {userOrHostNameFilter}
                 ),
                 ADD EVENT sqlserver.rpc_completed
                 (
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
-                    WHERE (statement NOT LIKE '%sp_help%')
+                    WHERE (statement NOT LIKE '%sp_help%')         
+                    AND (statement NOT LIKE '%FROM sys.%')
                     AND (statement NOT LIKE '%sp_reset_connection%')
                     AND (statement NOT LIKE '%master.sys.databases%')   
                     AND (statement NOT LIKE '%DECLARE @edition sysname%')   
                     AND (statement NOT LIKE '%SERVERPROPERTY%') 
                     AND (statement <> 'exec usp_GetSystemBranding')  
-                    AND (statement <> 'exec [dbo].[usp_GetMRIDocsConfig]')  
-                    AND (statement <> 'exec [Agora].[usp_AgoraGeneralSettings_Get]')  
-                    AND (statement NOT LIKE 'exec [dbo].[usp_Branding_IsDirty]%')  
+                    AND (statement NOT LIKE 'usp_GetMRIDocsConfig%')  
+                    AND (statement NOT LIKE '%usp_AgoraGeneralSettings_Get%')  
+                    AND (statement NOT LIKE '%usp_Branding_IsDirty%')  
                     AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 
-                    AND (statement NOT LIKE 'exec [dbo].[usp_ProcessLoggedInUserRequest]%')  
+                    AND (statement NOT LIKE '%usp_ProcessLoggedInUserRequest%')  
                     AND (statement NOT LIKE '%from master.sys.master_files%')                      
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%') 
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
                     AND (sqlserver.client_app_name <> 'SQLServerCEIP')
-                    AND (sqlserver.client_app_name <> N'Microsoft SQL Server Management Studio')
-                    {schemaFilterRPC}
+                    AND (sqlserver.client_app_name <> N'Microsoft SQL Server Management Studio')                  
                     {userOrHostNameFilter}
                 )
                 ADD TARGET package0.ring_buffer;
@@ -512,6 +586,69 @@ namespace SQLEventProfiler
                 txtPassword.Text = "Paris";
             }
         }
+
+        private void btnShowFilterEditor_Click(object sender, EventArgs e)
+        {
+            if (IsEditorOpen())
+            {
+                btnShowFilterEditor.Text = "Show Filters";
+            }
+            else
+            {
+                btnShowFilterEditor.Text = "Hide Filters";
+            }
+
+            if (filterEditor == null || filterEditor.IsDisposed)
+            {
+                var existing = string.Join(Environment.NewLine, dynamicFilters);
+                filterEditor = new FilterEditorForm(existing);
+                                
+                filterEditor.Width = this.Width;
+                                
+                filterEditor.StartPosition = FormStartPosition.Manual;
+                filterEditor.Location = new Point(this.Left, this.Bottom - 11);
+                                
+                filterEditor.Owner = this;
+                filterEditor.FormBorderStyle = FormBorderStyle.FixedSingle;
+
+                filterEditor.Show();
+            }
+            else
+            {                
+                filterEditor.Close();
+            }          
+        }
+
+        private void Form1_Move(object sender, EventArgs e)
+        {
+            if (filterEditor != null && !filterEditor.IsDisposed)
+            {
+                filterEditor.Location = new Point(this.Left, this.Bottom - 11);
+            }
+        }
+
+        public void ResetFilterEditorButton()
+        {
+            btnShowFilterEditor.Text = "Show Filters";
+        }
+
+        public void UpdateFiltersFromEditor(string text)
+        {
+            dynamicFilters = text
+                .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim())
+                .Where(line => line.Length > 0)
+                .ToList();
+
+            SaveFiltersToFile();
+        }
+
+        private bool IsEditorOpen()
+        {
+            return filterEditor != null &&
+                   !filterEditor.IsDisposed &&
+                   filterEditor.Visible;
+        }        
     }
 
     public static class StringExtensions
