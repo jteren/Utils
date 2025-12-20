@@ -59,11 +59,12 @@
             // cbxServer
             // 
             cbxServer.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbxServer.Font = new Font("Exo 2", 11.1428576F);
             cbxServer.FormattingEnabled = true;
             cbxServer.Location = new Point(36, 92);
             cbxServer.Margin = new Padding(4);
             cbxServer.Name = "cbxServer";
-            cbxServer.Size = new Size(380, 44);
+            cbxServer.Size = new Size(380, 46);
             cbxServer.TabIndex = 0;
             cbxServer.SelectedIndexChanged += cbxServer_SelectedIndexChanged;
             // 
@@ -96,17 +97,18 @@
             // lblServer
             // 
             lblServer.AutoSize = true;
-            lblServer.Font = new Font("Segoe UI", 11F);
-            lblServer.Location = new Point(33, 56);
+            lblServer.Font = new Font("Exo 2", 11F);
+            lblServer.Location = new Point(33, 54);
             lblServer.Margin = new Padding(4, 0, 4, 0);
             lblServer.Name = "lblServer";
-            lblServer.Size = new Size(87, 36);
+            lblServer.Size = new Size(94, 38);
             lblServer.TabIndex = 5;
             lblServer.Text = "Server";
             // 
             // stsStatus
             // 
             stsStatus.AutoSize = false;
+            stsStatus.Font = new Font("Exo 2", 11.1428576F);
             stsStatus.ImageScalingSize = new Size(24, 24);
             stsStatus.Items.AddRange(new ToolStripItem[] { stsStatusLabel });
             stsStatus.Location = new Point(0, 601);
@@ -125,6 +127,7 @@
             // 
             groupBox1.Controls.Add(txtUserToLog);
             groupBox1.Controls.Add(cbxThisMachine);
+            groupBox1.Font = new Font("Exo 2", 11.1428576F);
             groupBox1.Location = new Point(36, 161);
             groupBox1.Margin = new Padding(4);
             groupBox1.Name = "groupBox1";
@@ -140,7 +143,7 @@
             txtUserToLog.Margin = new Padding(4);
             txtUserToLog.Name = "txtUserToLog";
             txtUserToLog.PlaceholderText = "Username to log";
-            txtUserToLog.Size = new Size(324, 42);
+            txtUserToLog.Size = new Size(324, 39);
             txtUserToLog.TabIndex = 1;
             // 
             // cbxThisMachine
@@ -148,7 +151,7 @@
             cbxThisMachine.Location = new Point(20, 47);
             cbxThisMachine.Margin = new Padding(4);
             cbxThisMachine.Name = "cbxThisMachine";
-            cbxThisMachine.Size = new Size(129, 41);
+            cbxThisMachine.Size = new Size(145, 41);
             cbxThisMachine.TabIndex = 0;
             cbxThisMachine.Text = "This PC";
             cbxThisMachine.UseVisualStyleBackColor = true;
@@ -157,9 +160,10 @@
             // chkClearLogBeforeStart
             // 
             chkClearLogBeforeStart.AutoSize = true;
+            chkClearLogBeforeStart.Font = new Font("Exo 2", 11.1428576F);
             chkClearLogBeforeStart.Location = new Point(488, 501);
             chkClearLogBeforeStart.Name = "chkClearLogBeforeStart";
-            chkClearLogBeforeStart.Size = new Size(201, 41);
+            chkClearLogBeforeStart.Size = new Size(208, 43);
             chkClearLogBeforeStart.TabIndex = 18;
             chkClearLogBeforeStart.Text = "Clear on start";
             chkClearLogBeforeStart.UseVisualStyleBackColor = true;
@@ -170,6 +174,7 @@
             grpAuthentication.Controls.Add(txtPassword);
             grpAuthentication.Controls.Add(txtUserName);
             grpAuthentication.Controls.Add(cbxAuthenticationType);
+            grpAuthentication.Font = new Font("Exo 2", 11.1428576F);
             grpAuthentication.Location = new Point(33, 344);
             grpAuthentication.Margin = new Padding(4);
             grpAuthentication.Name = "grpAuthentication";
@@ -186,7 +191,7 @@
             btnPasswordSwapper.Location = new Point(272, 154);
             btnPasswordSwapper.Margin = new Padding(4);
             btnPasswordSwapper.Name = "btnPasswordSwapper";
-            btnPasswordSwapper.Size = new Size(76, 44);
+            btnPasswordSwapper.Size = new Size(76, 42);
             btnPasswordSwapper.TabIndex = 3;
             btnPasswordSwapper.UseVisualStyleBackColor = true;
             btnPasswordSwapper.Click += btnPasswordSwapper_Click;
@@ -196,7 +201,7 @@
             txtPassword.Location = new Point(23, 155);
             txtPassword.Margin = new Padding(4);
             txtPassword.Name = "txtPassword";
-            txtPassword.Size = new Size(324, 42);
+            txtPassword.Size = new Size(324, 39);
             txtPassword.TabIndex = 2;
             // 
             // txtUserName
@@ -204,7 +209,7 @@
             txtUserName.Location = new Point(23, 103);
             txtUserName.Margin = new Padding(4);
             txtUserName.Name = "txtUserName";
-            txtUserName.Size = new Size(324, 42);
+            txtUserName.Size = new Size(324, 39);
             txtUserName.TabIndex = 1;
             // 
             // cbxAuthenticationType
@@ -214,27 +219,28 @@
             cbxAuthenticationType.Location = new Point(23, 43);
             cbxAuthenticationType.Margin = new Padding(4);
             cbxAuthenticationType.Name = "cbxAuthenticationType";
-            cbxAuthenticationType.Size = new Size(324, 44);
+            cbxAuthenticationType.Size = new Size(324, 46);
             cbxAuthenticationType.TabIndex = 0;
             // 
             // txtLogFile
             // 
             txtLogFile.Enabled = false;
+            txtLogFile.Font = new Font("Exo 2", 11.1428576F);
             txtLogFile.Location = new Point(488, 447);
             txtLogFile.Margin = new Padding(4);
             txtLogFile.Name = "txtLogFile";
             txtLogFile.PlaceholderText = "Select a file...";
-            txtLogFile.Size = new Size(502, 42);
+            txtLogFile.Size = new Size(502, 39);
             txtLogFile.TabIndex = 12;
             // 
             // lblLogFile
             // 
             lblLogFile.AutoSize = true;
-            lblLogFile.Font = new Font("Segoe UI", 11F);
+            lblLogFile.Font = new Font("Exo 2", 11F);
             lblLogFile.Location = new Point(488, 408);
             lblLogFile.Margin = new Padding(4, 0, 4, 0);
             lblLogFile.Name = "lblLogFile";
-            lblLogFile.Size = new Size(98, 36);
+            lblLogFile.Size = new Size(104, 38);
             lblLogFile.TabIndex = 13;
             lblLogFile.Text = "Log file";
             // 
@@ -243,7 +249,7 @@
             btnSelectFile.Location = new Point(937, 446);
             btnSelectFile.Margin = new Padding(4);
             btnSelectFile.Name = "btnSelectFile";
-            btnSelectFile.Size = new Size(54, 45);
+            btnSelectFile.Size = new Size(54, 42);
             btnSelectFile.TabIndex = 15;
             btnSelectFile.Text = "+";
             btnSelectFile.UseVisualStyleBackColor = true;
@@ -264,11 +270,12 @@
             // 
             // mspMenu
             // 
+            mspMenu.Font = new Font("Exo 2", 11.1428576F);
             mspMenu.ImageScalingSize = new Size(24, 24);
             mspMenu.Location = new Point(0, 0);
             mspMenu.Name = "mspMenu";
             mspMenu.Padding = new Padding(7, 2, 0, 2);
-            mspMenu.Size = new Size(1022, 24);
+            mspMenu.Size = new Size(1022, 37);
             mspMenu.TabIndex = 17;
             mspMenu.Text = "menuStrip1";
             // 

@@ -171,6 +171,8 @@ namespace SQLEventProfiler
             btnStop.Enabled = false;
             txtLogFile.Text = logFile;
             chkClearLogBeforeStart.Checked = true;
+            stsStatus.Padding = new Padding(20, 0, 0, 0); // left, top, right, bottom
+
         }
 
         private void Option_CheckedChanged(object sender, EventArgs e)
@@ -303,8 +305,8 @@ namespace SQLEventProfiler
                     stsStatusLabel.Text = " Failed to connect.";
                 }
                 else if (ex.Message.Contains("Login failed for user", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    stsStatusLabel.Text = " Login failed.";
+                {                       
+                    stsStatusLabel.Text = $" {ex.Message}";
                 }
                 else
                 {
@@ -312,7 +314,7 @@ namespace SQLEventProfiler
                 }
                 SqlConnection.ClearAllPools();
 
-                MessageBox.Show($"Error starting session: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // MessageBox.Show($"Error starting session: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 UnlockControls();
                 return;
@@ -328,7 +330,7 @@ namespace SQLEventProfiler
             cts = new CancellationTokenSource();
             var xeStream = new XELiveEventStreamer(connString, $"{sessionName}");
 
-            btnStop.Enabled = true;
+            btnStop.Enabled = true;            
             stsStatusLabel.Text = "";// " Running... ";
 
             spinnerIndex = 0;
@@ -387,7 +389,7 @@ namespace SQLEventProfiler
             if (string.IsNullOrWhiteSpace(sql))
                 return false;
 
-            foreach (var filter in dynamicFilters)
+            foreach (var filter in dynamicFilters.Where(line => line.Length > 0 && !line.Trim().StartsWith("#")))
             {
                 if (sql.Contains(filter, StringComparison.OrdinalIgnoreCase))
                     return true;

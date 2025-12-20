@@ -31,6 +31,8 @@
             btnOK = new Button();
             btnCancel = new Button();
             txtFilters = new RichTextBox();
+            pnlLineNumbers = new DoubleBufferedPanel();
+            chkCloseOnSave = new CheckBox();
             SuspendLayout();
             // 
             // btnOK
@@ -59,18 +61,46 @@
             // 
             txtFilters.BorderStyle = BorderStyle.FixedSingle;
             txtFilters.Font = new Font("Segoe UI", 10F);
-            txtFilters.Location = new Point(12, 12);
+            txtFilters.Location = new Point(72, 12);
+            txtFilters.Margin = new Padding(10, 3, 3, 3);
             txtFilters.Name = "txtFilters";
-            txtFilters.Size = new Size(998, 379);
+            txtFilters.Size = new Size(938, 379);
             txtFilters.TabIndex = 3;
             txtFilters.Text = "";
+            txtFilters.SelectionChanged += txtFilters_SelectionChanged;
             txtFilters.TextChanged += txtFilters_TextChanged;
+            // 
+            // pnlLineNumbers
+            // 
+            pnlLineNumbers.Font = new Font("Exo 2", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            pnlLineNumbers.ForeColor = SystemColors.ControlDark;
+            pnlLineNumbers.Location = new Point(-3, 12);
+            pnlLineNumbers.Name = "pnlLineNumbers";
+            pnlLineNumbers.Padding = new Padding(0, 0, 5, 0);
+            pnlLineNumbers.RightToLeft = RightToLeft.Yes;
+            pnlLineNumbers.Size = new Size(76, 379);
+            pnlLineNumbers.TabIndex = 4;
+            // 
+            // chkCloseOnSave
+            // 
+            chkCloseOnSave.AutoSize = true;
+            chkCloseOnSave.Checked = true;
+            chkCloseOnSave.CheckState = CheckState.Checked;
+            chkCloseOnSave.Font = new Font("Exo 2", 11.1428576F);
+            chkCloseOnSave.Location = new Point(82, 406);
+            chkCloseOnSave.Name = "chkCloseOnSave";
+            chkCloseOnSave.Size = new Size(209, 43);
+            chkCloseOnSave.TabIndex = 5;
+            chkCloseOnSave.Text = "Close on save";
+            chkCloseOnSave.UseVisualStyleBackColor = true;
             // 
             // FilterEditorForm
             // 
             AutoScaleDimensions = new SizeF(14F, 36F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1022, 465);
+            Controls.Add(chkCloseOnSave);
+            Controls.Add(pnlLineNumbers);
             Controls.Add(txtFilters);
             Controls.Add(btnCancel);
             Controls.Add(btnOK);
@@ -78,11 +108,14 @@
             Text = "Filter editor";
             FormClosing += FilterEditorForm_FormClosing;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
         private Button btnOK;
         private Button btnCancel;
         private RichTextBox txtFilters;
+        private DoubleBufferedPanel pnlLineNumbers;
+        private CheckBox chkCloseOnSave;
     }
 }
