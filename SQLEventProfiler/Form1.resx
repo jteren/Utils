@@ -123,10 +123,21 @@
   <metadata name="ofd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>188, 17</value>
   </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="btnSelectFile.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAEVSURBVEhL7dY9K0ZhHMfxj5SnlPIKLOwWigGLPCWpe5N3
+        wCibjc0gRnkhNqUMFpvBqDyUidGgU386ru77dl1n9qvvcrp+/2/nOqfrHH7nFM8FvOEJW+hJZrXNK46x
+        mck+PvCIhXRYu1SCVnqxS6bxgGvcYiZdkKaJ4B6ruMQd5tNF9ZQKpmJ7rnCDz7iTjikVjMYD3g0u8J4u
+        qqcu2MZOJpPRqbrVjI6pC/ZwkMn3G1QkaJIiwRI2MpmITpHgECeZLEenSNCPwUx6o1MkWMR6JuPRKRIc
+        xeGXw0p0igQDGMqk0RbNYi6TsegUCapj+zyTtegUCYYxkklfdIoETfIv+DNZgpKPfkrV7So4a/NrUsJL
+        zPjJF4GBjyFtjaGZAAAAAElFTkSuQmCC
+</value>
+  </data>
   <metadata name="mspMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>296, 17</value>
   </metadata>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAQAAAAAAAEAIADlHAAARgAAADAwAAABACAAqCUAACsdAAAgIAAAAQAgAKgQAADTQgAAEBAAAAEA

@@ -48,9 +48,9 @@ namespace SQLEventProfiler
             string line = lines[lineIndex];
                         
             if (line.StartsWith("#"))
-                line = line.Substring(1);     // remove #
+                line = line.Substring(1).Trim();     
             else
-                line = "#" + line;            // add #
+                line = "# " + line;            // add #
 
             lines[lineIndex] = line;
             txtFilters.Lines = lines;
