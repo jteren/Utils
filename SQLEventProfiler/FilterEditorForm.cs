@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Text;
 
 namespace SQLEventProfiler
 {
@@ -19,7 +11,7 @@ namespace SQLEventProfiler
         private int currentLineIndexSelect = -1;
         private int currentLineIndexExec = -1;
 
-        public FilterEditorForm(string existingFilters)
+        public FilterEditorForm(string existingFilters, List<string> schemas)
         {
             InitializeComponent();
             this.ShowInTaskbar = false;
@@ -54,6 +46,9 @@ namespace SQLEventProfiler
             ColorizeFilters(txtFiltersExec);
             ColorizeFilters(txtFilters);
 
+            AddCheckboxesToPanel(pnlSchemas, schemas);
+
+
             txtFilters.SelectionChanged += txtFilters_SelectionChanged;
             pnlLineNumbers.Paint += pnlLineNumbers_Paint;
             txtFilters.DoubleClick += txtFilters_DoubleClick;
@@ -79,7 +74,7 @@ namespace SQLEventProfiler
                 if (line.StartsWith("#"))
                     line = line.Substring(1).Trim();
                 else
-                    line = "# " + line;            // add #
+                    line = "# " + line;            
                 lines[lineIndex] = line;
                 txtFiltersExec.Lines = lines;
                 int newCharIndex = txtFiltersExec.GetFirstCharIndexFromLine(lineIndex);
@@ -99,6 +94,45 @@ namespace SQLEventProfiler
             txtFiltersExec.Resize += (s, e) => pnlLineNumbersExec.Invalidate();
         }
 
+        private void AddCheckboxesToPanel(Panel panel, List<string> items)
+        {
+            panel.Controls.Clear();
+            panel.AutoScroll = true;
+
+            int colCount = 3;
+            int cbWidth = 300;
+            int cbHeight = 45;
+            int spacing = 5;
+
+            Panel spacer = new Panel();
+            spacer.Width = 15;
+            spacer.Height = 20;
+            spacer.Location = new Point(0, 0); // margin
+            panel.Controls.Add(spacer);
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                CheckBox cb = new CheckBox();
+                cb.Text = items[i];                                
+                cb.Name = $"chk{items[i]}";                 
+                cb.Tag = items[i];                
+                cb.AutoSize = false;
+                cb.Width = 290;
+                cb.Height = cb.PreferredSize.Height; // ensures correct height
+                cb.AutoEllipsis = true;
+                cb.UseCompatibleTextRendering = true; // <-- fixes vertical alignment
+
+                int col = i % colCount;
+                int row = i / colCount;
+
+                cb.Left = col * (cbWidth + spacing) + spacer.Width;
+                cb.Top = row * (cbHeight + spacing) + spacer.Height;
+                cb.Width = cbWidth;
+
+                panel.Controls.Add(cb);
+            }
+        }
+
         private void txtFilters_DoubleClick(object sender, EventArgs e)
         {
             int lineIndex = txtFilters.GetLineFromCharIndex(txtFilters.SelectionStart);
@@ -111,7 +145,7 @@ namespace SQLEventProfiler
             if (line.StartsWith("#"))
                 line = line.Substring(1).Trim();
             else
-                line = "# " + line;            // add #
+                line = "# " + line;            
 
             lines[lineIndex] = line;
             txtFilters.Lines = lines;
@@ -154,9 +188,7 @@ namespace SQLEventProfiler
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            //FilterText = txtFilters.Text;
-            //FilterText += Environment.NewLine + txtFiltersExec.Text; 
-
+            
             DialogResult = DialogResult.OK;
 
             if (Owner is Form1 main)
@@ -190,8 +222,7 @@ namespace SQLEventProfiler
                 main.ResetFilterEditorButton();
             }
         }
-
-        // TODO Make this generic to apply to both txtFilters and txtFiltersExec
+               
         private void ColorizeFilters(RichTextBox rtb)
         {
             int selectionStart = txtFilters.SelectionStart;

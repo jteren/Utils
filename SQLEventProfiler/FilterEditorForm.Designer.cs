@@ -39,11 +39,7 @@
             pnlLineNumbersExec = new DoubleBufferedPanel();
             tabStatements = new TabPage();
             tabSchemas = new TabPage();
-            cbxBranding = new CheckBox();
-            cbxInvoiceValidation = new CheckBox();
-            cbxIdentity = new CheckBox();
-            cbxAgora = new CheckBox();
-            clbIgnoredSchemas = new CheckedListBox();
+            pnlSchemas = new Panel();
             tabFilterCategories.SuspendLayout();
             tabExec.SuspendLayout();
             tabStatements.SuspendLayout();
@@ -175,11 +171,7 @@
             // 
             // tabSchemas
             // 
-            tabSchemas.Controls.Add(cbxBranding);
-            tabSchemas.Controls.Add(cbxInvoiceValidation);
-            tabSchemas.Controls.Add(cbxIdentity);
-            tabSchemas.Controls.Add(cbxAgora);
-            tabSchemas.Controls.Add(clbIgnoredSchemas);
+            tabSchemas.Controls.Add(pnlSchemas);
             tabSchemas.Location = new Point(4, 47);
             tabSchemas.Name = "tabSchemas";
             tabSchemas.Padding = new Padding(3);
@@ -188,54 +180,13 @@
             tabSchemas.Text = "Schemas";
             tabSchemas.UseVisualStyleBackColor = true;
             // 
-            // cbxBranding
+            // pnlSchemas
             // 
-            cbxBranding.AutoSize = true;
-            cbxBranding.Location = new Point(314, 390);
-            cbxBranding.Name = "cbxBranding";
-            cbxBranding.Size = new Size(155, 43);
-            cbxBranding.TabIndex = 4;
-            cbxBranding.Text = "Branding";
-            cbxBranding.UseVisualStyleBackColor = true;
-            // 
-            // cbxInvoiceValidation
-            // 
-            cbxInvoiceValidation.AutoSize = true;
-            cbxInvoiceValidation.Location = new Point(314, 341);
-            cbxInvoiceValidation.Name = "cbxInvoiceValidation";
-            cbxInvoiceValidation.Size = new Size(257, 43);
-            cbxInvoiceValidation.TabIndex = 3;
-            cbxInvoiceValidation.Text = "Invoice Validation";
-            cbxInvoiceValidation.UseVisualStyleBackColor = true;
-            // 
-            // cbxIdentity
-            // 
-            cbxIdentity.AutoSize = true;
-            cbxIdentity.Location = new Point(314, 292);
-            cbxIdentity.Name = "cbxIdentity";
-            cbxIdentity.Size = new Size(136, 43);
-            cbxIdentity.TabIndex = 2;
-            cbxIdentity.Text = "Identity";
-            cbxIdentity.UseVisualStyleBackColor = true;
-            // 
-            // cbxAgora
-            // 
-            cbxAgora.AutoSize = true;
-            cbxAgora.Location = new Point(314, 243);
-            cbxAgora.Name = "cbxAgora";
-            cbxAgora.Size = new Size(116, 43);
-            cbxAgora.TabIndex = 1;
-            cbxAgora.Text = "Agora";
-            cbxAgora.UseVisualStyleBackColor = true;
-            // 
-            // clbIgnoredSchemas
-            // 
-            clbIgnoredSchemas.FormattingEnabled = true;
-            clbIgnoredSchemas.Items.AddRange(new object[] { "Agora", "Identity", "InvoiceValidation" });
-            clbIgnoredSchemas.Location = new Point(15, 18);
-            clbIgnoredSchemas.Name = "clbIgnoredSchemas";
-            clbIgnoredSchemas.Size = new Size(297, 148);
-            clbIgnoredSchemas.TabIndex = 0;
+            pnlSchemas.AutoScroll = true;
+            pnlSchemas.Location = new Point(6, 0);
+            pnlSchemas.Name = "pnlSchemas";
+            pnlSchemas.Size = new Size(977, 512);
+            pnlSchemas.TabIndex = 0;
             // 
             // FilterEditorForm
             // 
@@ -254,7 +205,6 @@
             tabExec.ResumeLayout(false);
             tabStatements.ResumeLayout(false);
             tabSchemas.ResumeLayout(false);
-            tabSchemas.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -268,13 +218,9 @@
         private TabControl tabFilterCategories;
         private TabPage tabStatements;
         private TabPage tabSchemas;
-        private CheckedListBox clbIgnoredSchemas;
         private TabPage tabExec;
         private RichTextBox txtFiltersExec;
         private DoubleBufferedPanel pnlLineNumbersExec;
-        private CheckBox cbxAgora;
-        private CheckBox cbxBranding;
-        private CheckBox cbxInvoiceValidation;
-        private CheckBox cbxIdentity;
+        private Panel pnlSchemas;
     }
 }

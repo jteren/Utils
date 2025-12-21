@@ -148,10 +148,11 @@
             // 
             // cbxThisMachine
             // 
+            cbxThisMachine.AutoSize = true;
             cbxThisMachine.Location = new Point(20, 47);
             cbxThisMachine.Margin = new Padding(4);
             cbxThisMachine.Name = "cbxThisMachine";
-            cbxThisMachine.Size = new Size(145, 41);
+            cbxThisMachine.Size = new Size(133, 43);
             cbxThisMachine.TabIndex = 0;
             cbxThisMachine.Text = "This PC";
             cbxThisMachine.UseVisualStyleBackColor = true;

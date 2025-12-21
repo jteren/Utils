@@ -8,15 +8,15 @@ namespace SQLEventProfiler
 {
     public partial class Form1 : Form
     {
-        private class Schema
-        {
-            public string MenuText { get; set; }
-            public string SchemaName { get; set; }
-            public bool IsIgnored { get; set; }
-        }
+        //private class Schema
+        //{
+        //    public string MenuText { get; set; }
+        //    public string SchemaName { get; set; }
+        //    public bool IsIgnored { get; set; }
+        //}
 
-        private ToolStripMenuItem identityItem;
-        private ToolStripMenuItem agoraItem;
+        //private ToolStripMenuItem identityItem;
+        //private ToolStripMenuItem agoraItem;
 
         private CancellationTokenSource cts;
         private Task readTask;
@@ -31,22 +31,26 @@ namespace SQLEventProfiler
 
         private string filterFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "filters.txt");
 
-        private Timer timer;
+        private Timer sessionRunTimeTimer;
         private DateTime startTime;
 
         private Timer statusTimer;
         private int spinnerIndex = 0;
         private readonly string[] spinnerFrames = { "Running...", "", "Running...", "" };
 
+        private Timer sessionCheckTimer;
+
         private List<string> dynamicFilters = new List<string>();
 
         private FilterEditorForm filterEditor;
 
-        private List<Schema> schemas = new List<Schema>
-        {
-            new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
-            new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
-        };
+        private List<string> schemas = new List<string>();
+
+        //private List<Schema> schemas = new List<Schema>
+        //{
+        //    new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
+        //    new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
+        //};
 
         public Form1()
         {
@@ -63,9 +67,9 @@ namespace SQLEventProfiler
             statusTimer.Tick += StatusTimer_Tick;
 
             // Setup timer
-            timer = new Timer();
-            timer.Interval = 10; // 10ms
-            timer.Tick += Timer_Tick;
+            sessionRunTimeTimer = new Timer();
+            sessionRunTimeTimer.Interval = 10; // 10ms
+            sessionRunTimeTimer.Tick += SessionRunTimeTimer_Tick;
         }
 
         private void LoadFiltersFromFile()
@@ -108,7 +112,90 @@ namespace SQLEventProfiler
             stsStatusLabel.Text = $" {spinnerFrames[spinnerIndex]}";
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void SessionCheckTimer_Tick(object sender, EventArgs e)
+        {
+            string query = " SELECT [ses].[name] AS [exists]," +
+                            " [xes].[name] AS [running]" +
+                            " FROM [sys].[server_event_sessions] [ses] " +
+                            " LEFT JOIN [sys].[dm_xe_sessions] [xes] " +
+                            " ON [xes].[name] = [ses].[name] " +
+                           $" WHERE [ses].[name] = '{sessionName}'";
+
+            using (var conn = new SqlConnection(connString))
+            using (var cmd = new SqlCommand(query, conn))
+            {
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        string? exists = reader["exists"] as string;
+                        string? running = reader["running"] as string;
+
+                        if (string.IsNullOrEmpty(exists) || string.IsNullOrEmpty(running))
+                        {
+                            // Session is missing or not running                            
+                            sessionRunTimeTimer.Stop();
+                            statusTimer.Stop();
+                            sessionCheckTimer.Stop();
+
+                            stsStatusLabel.Text = " Session stopped unexpectedly.";
+                            lblStopwatch.Text = "00:00:00.00";
+                            UnlockControls();
+
+                            cts?.Cancel();
+                            logWriter?.Dispose();
+                            logWriter = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task LoadDatabaseSchemasAsync(SqlConnection conn)
+        {
+            if (conn == null) throw new ArgumentNullException(nameof(conn));
+                        
+            string query = "USE [eSightFeature]; SELECT name FROM sys.schemas ORDER BY name";
+
+            try
+            {                
+                if (conn.State != System.Data.ConnectionState.Open)
+                {
+                    await conn.OpenAsync();
+                }
+
+                using (var cmd = new SqlCommand(query, conn))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {                   
+                    schemas.Clear();
+
+                    while (await reader.ReadAsync())
+                    {                        
+                        if (!reader.IsDBNull(0))
+                        {
+                            string schemaName = reader.GetString(0);
+                            if (!string.IsNullOrWhiteSpace(schemaName) 
+                                && !schemaName.Contains("Test")
+                                && !schemaName.Equals("sys")
+                                && !schemaName.Equals("tSQLt")
+                                && !schemaName.Equals("RedGateLocal")
+                                && !schemaName.StartsWith("db_"))
+                            {
+                                schemas.Add(schemaName);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Preserve original behavior of not surfacing errors to the user here; log for diagnostics.
+                Debug.WriteLine($"LoadDatabaseSchemasAsync error: {ex.Message}");
+            }
+        }
+        
+        private void SessionRunTimeTimer_Tick(object sender, EventArgs e)
         {
             TimeSpan elapsed = DateTime.Now - startTime;
             lblStopwatch.Text = $"{elapsed:hh\\:mm\\:ss\\.ff}";
@@ -133,31 +220,31 @@ namespace SQLEventProfiler
         private void SetControls()
         {
             ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");
-            ToolStripMenuItem ignoreMenuItem = new ToolStripMenuItem("Ignore");
+            //ToolStripMenuItem ignoreMenuItem = new ToolStripMenuItem("Ignore");
             ToolStripMenuItem helpMenuItem = new ToolStripMenuItem("Help");
 
             ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");
 
-            identityItem = new ToolStripMenuItem("Identity");
-            identityItem.CheckOnClick = true;
-            identityItem.Checked = true;
+            //identityItem = new ToolStripMenuItem("Identity");
+            //identityItem.CheckOnClick = true;
+            //identityItem.Checked = true;
 
-            agoraItem = new ToolStripMenuItem("Agora");
-            agoraItem.CheckOnClick = true;
-            agoraItem.Checked = true;
+            //agoraItem = new ToolStripMenuItem("Agora");
+            //agoraItem.CheckOnClick = true;
+            //agoraItem.Checked = true;
 
-            identityItem.CheckedChanged += Option_CheckedChanged;
-            agoraItem.CheckedChanged += Option_CheckedChanged;
+            //identityItem.CheckedChanged += Option_CheckedChanged;
+            //agoraItem.CheckedChanged += Option_CheckedChanged;
 
             exitItem.Click += (s, e) => this.Close();
 
             fileMenuItem.DropDownItems.Add(exitItem);
 
-            ignoreMenuItem.DropDownItems.Add(identityItem);
-            ignoreMenuItem.DropDownItems.Add(agoraItem);
+            //ignoreMenuItem.DropDownItems.Add(identityItem);
+            //ignoreMenuItem.DropDownItems.Add(agoraItem);
 
             mspMenu.Items.Add(fileMenuItem);
-            mspMenu.Items.Add(ignoreMenuItem);
+            //mspMenu.Items.Add(ignoreMenuItem);
             mspMenu.Items.Add(helpMenuItem);
 
             this.MainMenuStrip = mspMenu;
@@ -175,23 +262,23 @@ namespace SQLEventProfiler
 
         }
 
-        private void Option_CheckedChanged(object sender, EventArgs e)
-        {
-            var item = sender as ToolStripMenuItem;
-            if (item != null)
-            {
-                string state = item.Checked ? "enabled" : "disabled";
+        //private void Option_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    var item = sender as ToolStripMenuItem;
+        //    if (item != null)
+        //    {
+        //        string state = item.Checked ? "enabled" : "disabled";
 
-                var schema = schemas.FirstOrDefault(s => s.MenuText == item.Text);
+        //        var schema = schemas.FirstOrDefault(s => s.MenuText == item.Text);
 
-                if (schema != null)
-                {
-                    schema.IsIgnored = item.Checked;
-                }
+        //        if (schema != null)
+        //        {
+        //            schema.IsIgnored = item.Checked;
+        //        }
 
-                MessageBox.Show($"{item.Text} was {state}");
-            }
-        }        
+        //        MessageBox.Show($"{item.Text} was {state}");
+        //    }
+        //}        
 
         private string BuildConnectionString()
         {
@@ -213,9 +300,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = false;
             txtPassword.Enabled = false;
             btnStart.Enabled = false;
-            btnPasswordSwapper.Enabled = false;
-            agoraItem.Enabled = false;
-            identityItem.Enabled = false;
+            btnPasswordSwapper.Enabled = false;         
             chkClearLogBeforeStart.Enabled = false;
         }
         private void UnlockControls()
@@ -234,9 +319,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtPassword.Enabled = true;
             btnPasswordSwapper.Enabled = true;
-            lblStopwatch.Visible = false;
-            agoraItem.Enabled = true;
-            identityItem.Enabled = true;
+            lblStopwatch.Visible = false;         
             chkClearLogBeforeStart.Enabled = true;
         }
 
@@ -250,7 +333,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtUserName.Text = "sa";
             txtPassword.Enabled = true;
-            txtPassword.Text = "Paris";
+            txtPassword.Text = "Paris25";
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -272,7 +355,13 @@ namespace SQLEventProfiler
                     EnsureSessionExistsAndStarted(conn);
                     lblStopwatch.Visible = true;
                     startTime = DateTime.Now;
-                    timer.Start();
+                    sessionRunTimeTimer.Start();
+
+                    sessionCheckTimer = new Timer();
+                    sessionCheckTimer.Interval = 3000; // ms
+                    sessionCheckTimer.Tick += SessionCheckTimer_Tick;
+                    sessionCheckTimer.Start();
+
                     validConnection = true;
 
                     var nppPath = @"C:\Program Files\Notepad++\notepad++.exe";
@@ -452,7 +541,7 @@ namespace SQLEventProfiler
             UnlockControls();
             StopSessionAndCleanup();
             statusTimer.Stop();
-            timer.Stop();
+            sessionRunTimeTimer.Stop();
             lblStopwatch.Text = "00:00:00.00";
             stsStatusLabel.Text = " Stopped";
         }
@@ -601,7 +690,7 @@ namespace SQLEventProfiler
             }
         }
 
-        private void btnShowFilterEditor_Click(object sender, EventArgs e)
+        private async void btnShowFilterEditor_Click(object sender, EventArgs e)
         {
             if (IsEditorOpen())
             {
@@ -614,8 +703,17 @@ namespace SQLEventProfiler
 
             if (filterEditor == null || filterEditor.IsDisposed)
             {
+
+                if (schemas.Count < 1)
+                {
+                    using (var conn = new SqlConnection(BuildConnectionString()))
+                    {
+                        await LoadDatabaseSchemasAsync(conn);
+                    }
+                }
+
                 var existing = string.Join(Environment.NewLine, dynamicFilters);
-                filterEditor = new FilterEditorForm(existing);
+                filterEditor = new FilterEditorForm(existing, schemas);
                                 
                 filterEditor.Width = this.Width;
                                 
