@@ -8,15 +8,7 @@ namespace SQLEventProfiler
 {
     public partial class Form1 : Form
     {
-        //private class Schema
-        //{
-        //    public string MenuText { get; set; }
-        //    public string SchemaName { get; set; }
-        //    public bool IsIgnored { get; set; }
-        //}
-
-        //private ToolStripMenuItem identityItem;
-        //private ToolStripMenuItem agoraItem;
+        
 
         private CancellationTokenSource cts;
         private Task readTask;
@@ -45,13 +37,7 @@ namespace SQLEventProfiler
         private FilterEditorForm filterEditor;
 
         private List<string> schemas = new List<string>();
-
-        //private List<Schema> schemas = new List<Schema>
-        //{
-        //    new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
-        //    new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
-        //};
-
+        
         public Form1()
         {
             InitializeComponent();
@@ -219,32 +205,18 @@ namespace SQLEventProfiler
 
         private void SetControls()
         {
-            ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");
-            //ToolStripMenuItem ignoreMenuItem = new ToolStripMenuItem("Ignore");
+            ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");        
             ToolStripMenuItem helpMenuItem = new ToolStripMenuItem("Help");
 
             ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");
 
-            //identityItem = new ToolStripMenuItem("Identity");
-            //identityItem.CheckOnClick = true;
-            //identityItem.Checked = true;
-
-            //agoraItem = new ToolStripMenuItem("Agora");
-            //agoraItem.CheckOnClick = true;
-            //agoraItem.Checked = true;
-
-            //identityItem.CheckedChanged += Option_CheckedChanged;
-            //agoraItem.CheckedChanged += Option_CheckedChanged;
-
+          
             exitItem.Click += (s, e) => this.Close();
 
             fileMenuItem.DropDownItems.Add(exitItem);
+                      
 
-            //ignoreMenuItem.DropDownItems.Add(identityItem);
-            //ignoreMenuItem.DropDownItems.Add(agoraItem);
-
-            mspMenu.Items.Add(fileMenuItem);
-            //mspMenu.Items.Add(ignoreMenuItem);
+            mspMenu.Items.Add(fileMenuItem);           
             mspMenu.Items.Add(helpMenuItem);
 
             this.MainMenuStrip = mspMenu;
@@ -262,23 +234,7 @@ namespace SQLEventProfiler
 
         }
 
-        //private void Option_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    var item = sender as ToolStripMenuItem;
-        //    if (item != null)
-        //    {
-        //        string state = item.Checked ? "enabled" : "disabled";
-
-        //        var schema = schemas.FirstOrDefault(s => s.MenuText == item.Text);
-
-        //        if (schema != null)
-        //        {
-        //            schema.IsIgnored = item.Checked;
-        //        }
-
-        //        MessageBox.Show($"{item.Text} was {state}");
-        //    }
-        //}        
+        
 
         private string BuildConnectionString()
         {
@@ -333,7 +289,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtUserName.Text = "sa";
             txtPassword.Enabled = true;
-            txtPassword.Text = "Paris25";
+            txtPassword.Text = "Paris";
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -403,8 +359,7 @@ namespace SQLEventProfiler
                 }
                 SqlConnection.ClearAllPools();
 
-                // MessageBox.Show($"Error starting session: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
+              
                 UnlockControls();
                 return;
             }
