@@ -46,7 +46,6 @@ namespace SQLEventProfiler
         {
             new Schema { MenuText = "Agora", SchemaName = "Agora", IsIgnored = true },
             new Schema { MenuText = "Identity", SchemaName = "eSightIdentityServer", IsIgnored = true }
-
         };
 
         public Form1()
@@ -119,8 +118,9 @@ namespace SQLEventProfiler
         {
             cbxServer.Items.Clear();
             cbxServer.Items.Add($"{localServerName}");
-            cbxServer.Items.Add("dev-test-02");
-            cbxServer.Items.Add("dev-test-03");
+            cbxServer.Items.Add("uksestdevsql01.ukest.lan"); 
+            cbxServer.Items.Add("uksestsupsql01.ukest.lan"); // port 1433
+            cbxServer.Items.Add(@"uksestsupsql01.ukest.lan\SQL2022,1533"); // port 1533           
         }
 
         private void PopulateAuthTypes()
@@ -191,7 +191,7 @@ namespace SQLEventProfiler
 
                 MessageBox.Show($"{item.Text} was {state}");
             }
-        }
+        }        
 
         private string BuildConnectionString()
         {
@@ -436,6 +436,17 @@ namespace SQLEventProfiler
             }
         }
 
+        // TODO add a queue for messages 
+        // add button on the bottom of the filters to toggle selected rows #
+
+        // for schemas add uncheck all option so no schemas are filtered.
+
+        // also add global - DISABLE Filters so everything will get logged.
+
+        // Also check what happens if the log file is deleted while running.
+
+        // check what happes if the XE session is deleted while running.
+
         private async void btnStop_Click(object sender, EventArgs e)
         {
             UnlockControls();
@@ -486,7 +497,6 @@ namespace SQLEventProfiler
                 userOrHostNameFilter = $" AND (sqlserver.username LIKE N'%{userToLog}%')";
             }
 
-
             string checkSql = $@"
             IF NOT EXISTS (SELECT * FROM sys.server_event_sessions WHERE name = '{sessionName}')
             BEGIN
@@ -495,7 +505,8 @@ namespace SQLEventProfiler
                 ADD EVENT sqlserver.sql_batch_completed
                 (
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
-                    WHERE (batch_text NOT LIKE '%sys.objects%') 
+                    WHERE (sqlserver.database_name <> 'tempdb')
+                    AND (batch_text NOT LIKE '%sys.objects%') 
                     AND (batch_text NOT LIKE '%FROM sys.%')
                     AND (batch_text <> 'select @@trancount')                                  
                     AND (batch_text <> 'SET NOEXEC, PARSEONLY, FMTONLY OFF')
@@ -511,7 +522,8 @@ namespace SQLEventProfiler
                 ADD EVENT sqlserver.rpc_completed
                 (
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
-                    WHERE (statement NOT LIKE '%sp_help%')         
+                    WHERE (sqlserver.database_name <> 'tempdb')
+                    AND (statement NOT LIKE '%sp_help%')         
                     AND (statement NOT LIKE '%FROM sys.%')
                     AND (statement NOT LIKE '%sp_reset_connection%')
                     AND (statement NOT LIKE '%master.sys.databases%')   

@@ -64,7 +64,7 @@
             cbxServer.Location = new Point(36, 92);
             cbxServer.Margin = new Padding(4);
             cbxServer.Name = "cbxServer";
-            cbxServer.Size = new Size(380, 46);
+            cbxServer.Size = new Size(430, 46);
             cbxServer.TabIndex = 0;
             cbxServer.SelectedIndexChanged += cbxServer_SelectedIndexChanged;
             // 
@@ -142,7 +142,7 @@
             txtUserToLog.Location = new Point(20, 95);
             txtUserToLog.Margin = new Padding(4);
             txtUserToLog.Name = "txtUserToLog";
-            txtUserToLog.PlaceholderText = "Username to log";
+            txtUserToLog.PlaceholderText = "PC/username to log";
             txtUserToLog.Size = new Size(324, 39);
             txtUserToLog.TabIndex = 1;
             // 
