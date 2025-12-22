@@ -244,8 +244,8 @@ namespace SQLEventProfiler
 
         private void ColorizeFilters(RichTextBox rtb)
         {
-            int selectionStart = txtFilters.SelectionStart;
-            int selectionLength = txtFilters.SelectionLength;
+            int selectionStart = rtb.SelectionStart;
+            int selectionLength = rtb.SelectionLength;
 
             rtb.SuspendLayout();
 

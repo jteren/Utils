@@ -143,7 +143,7 @@
             txtUserToLog.Location = new Point(20, 95);
             txtUserToLog.Margin = new Padding(4);
             txtUserToLog.Name = "txtUserToLog";
-            txtUserToLog.PlaceholderText = "PC/username to log";
+            txtUserToLog.PlaceholderText = "PC/username";
             txtUserToLog.Size = new Size(324, 39);
             txtUserToLog.TabIndex = 1;
             // 
@@ -195,7 +195,7 @@
             btnPasswordSwapper.Location = new Point(285, 154);
             btnPasswordSwapper.Margin = new Padding(4);
             btnPasswordSwapper.Name = "btnPasswordSwapper";
-            btnPasswordSwapper.Size = new Size(63, 42);
+            btnPasswordSwapper.Size = new Size(63, 41);
             btnPasswordSwapper.TabIndex = 3;
             btnPasswordSwapper.UseVisualStyleBackColor = true;
             btnPasswordSwapper.Click += btnPasswordSwapper_Click;
@@ -256,7 +256,7 @@
             btnSelectFile.Location = new Point(937, 445);
             btnSelectFile.Margin = new Padding(4);
             btnSelectFile.Name = "btnSelectFile";
-            btnSelectFile.Size = new Size(54, 42);
+            btnSelectFile.Size = new Size(54, 41);
             btnSelectFile.TabIndex = 15;
             btnSelectFile.UseVisualStyleBackColor = true;
             btnSelectFile.Click += btnSelectFile_Click;

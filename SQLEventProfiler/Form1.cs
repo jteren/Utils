@@ -526,6 +526,7 @@ namespace SQLEventProfiler
         // TODO add a queue for messages 
         // add button on the bottom of the filters to toggle selected rows #
         // remove duplicated rows on save
+        // remove square brackets on save and order alphabetically
 
         private async void btnStop_Click(object sender, EventArgs e)
         {
