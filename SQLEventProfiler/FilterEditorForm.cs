@@ -1,14 +1,15 @@
 ﻿using System.Text;
+using System.Windows.Forms;
 
 namespace SQLEventProfiler
 {
     public partial class FilterEditorForm : Form
-    {        
+    {
         private string originalTextExec;
         private string originalText;
 
         private int currentLineIndexSelect = -1;
-        private int currentLineIndexExec = -1;        
+        private int currentLineIndexExec = -1;
 
         private List<string> schemaFilters = new List<string>();
 
@@ -16,7 +17,7 @@ namespace SQLEventProfiler
         {
             InitializeComponent();
             this.ShowInTaskbar = false;
-            
+
             string text = existingFilters;
 
             string[] lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
@@ -47,9 +48,9 @@ namespace SQLEventProfiler
 
             txtFilters.BackColor = Color.FromArgb(245, 245, 245);
             txtFiltersExec.BackColor = Color.FromArgb(245, 245, 245);
-                                    
+
             AddCheckboxesToPanel(pnlSchemas, schemas);
-            
+
             foreach (CheckBox cbx in pnlSchemas.Controls.OfType<CheckBox>())
             {
                 if (schemaFilters.Contains(cbx.Tag.ToString()))
@@ -216,11 +217,11 @@ namespace SQLEventProfiler
         }
 
         private void FilterEditorForm_FormClosing(object sender, FormClosingEventArgs e)
-        {            
+        {
             if (Owner is Form1 main)
             {
                 main.SelectedFiltersTabIndex = tabFilterCategories.SelectedIndex;
-                main.ResetFilterEditorButton();                
+                main.ResetFilterEditorButton();
             }
         }
 
@@ -420,7 +421,32 @@ namespace SQLEventProfiler
             this.Region = new Region(path);
         }
 
+        private void btnToggleSelected_Click(object sender, EventArgs e)
+        {
+            RichTextBox rtb = tabFilterCategories.SelectedIndex == 0 ? txtFiltersExec : txtFilters;
 
+            int startLine = rtb.GetLineFromCharIndex(rtb.SelectionStart);
+            int endLine = rtb.GetLineFromCharIndex(
+                                rtb.SelectionStart + rtb.SelectionLength);
+
+            if (startLine != endLine) { --endLine; }
+            
+            string[] lines = rtb.Lines;
+
+            for (int i = startLine; i <= endLine; i++)
+            {
+                if (lines[i].StartsWith("# "))
+                    lines[i] = lines[i].Substring(2);
+                else
+                    lines[i] = "# " + lines[i];
+            }
+
+            rtb.Lines = lines;
+
+            ApplyLeftPadding();
+            //ColorizeFilters(txtFiltersExec);
+            //pnlLineNumbersExec.Invalidate();
+        }
     }
 
     public class DoubleBufferedPanel : Panel
