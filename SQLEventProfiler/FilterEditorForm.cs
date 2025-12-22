@@ -47,11 +47,7 @@ namespace SQLEventProfiler
 
             txtFilters.BackColor = Color.FromArgb(245, 245, 245);
             txtFiltersExec.BackColor = Color.FromArgb(245, 245, 245);
-
-            ApplyLeftPadding();
-            ColorizeFilters(txtFiltersExec);
-            ColorizeFilters(txtFilters);
-                        
+                                    
             AddCheckboxesToPanel(pnlSchemas, schemas);
             
             foreach (CheckBox cbx in pnlSchemas.Controls.OfType<CheckBox>())
@@ -105,6 +101,7 @@ namespace SQLEventProfiler
             txtFiltersExec.VScroll += (s, e) => pnlLineNumbersExec.Invalidate();
             txtFiltersExec.TextChanged += (s, e) => pnlLineNumbersExec.Invalidate();
             txtFiltersExec.Resize += (s, e) => pnlLineNumbersExec.Invalidate();
+
         }
 
         private void AddCheckboxesToPanel(Panel panel, List<string> items)
@@ -223,8 +220,7 @@ namespace SQLEventProfiler
             if (Owner is Form1 main)
             {
                 main.SelectedFiltersTabIndex = tabFilterCategories.SelectedIndex;
-                main.ResetFilterEditorButton();
-                // main.UpdateFiltersFromEditor(GetAllFiltersText());
+                main.ResetFilterEditorButton();                
             }
         }
 
@@ -347,6 +343,64 @@ namespace SQLEventProfiler
             {
                 tabFilterCategories.SelectedIndex = main.SelectedFiltersTabIndex;
             }
+
+            // Defer final layout/formatting until after the form is shown so RichTextBox
+            // can compute correct line heights. Doing this in BeginInvoke runs the action
+            // on the message loop after initial layout/handle creation is complete.
+            this.BeginInvoke((Action)(() =>
+            {
+                // Ensure handles are created
+                _ = txtFilters.Handle;
+                _ = txtFiltersExec.Handle;
+
+                // Re-apply left padding and colorization after handles exist
+                ApplyLeftPadding();
+                ColorizeFilters(txtFiltersExec);
+                ColorizeFilters(txtFilters);
+
+                // Force RichTextBox to re-evaluate layout:
+                // - Reassign the Font (triggers WM_SETFONT)
+                // - Try to set ZoomFactor to 1.0f (forces internal reflow, ignore if not supported)
+                // - Call PerformLayout/Refresh to push a layout/paint pass
+                ForceRichTextBoxLayout(txtFilters);
+                ForceRichTextBoxLayout(txtFiltersExec);
+
+                // Redraw line number panels so numbers line up with final layout
+                pnlLineNumbers.Invalidate();
+                pnlLineNumbersExec.Invalidate();
+            }));
+        }
+
+        private void ForceRichTextBoxLayout(RichTextBox rtb)
+        {
+            // Re-create and reassign the font to trigger a WM_SETFONT and an internal layout pass.
+            var oldFont = rtb.Font;
+            try
+            {
+                rtb.Font = new Font(oldFont.FontFamily, oldFont.Size, oldFont.Style);
+            }
+            catch
+            {
+                // ignore any font recreation issues (fallback to current font)
+            }
+
+            // Re-apply selection indent (keeps left padding consistent)
+            rtb.SelectAll();
+            rtb.SelectionIndent = 10;
+            rtb.DeselectAll();
+
+            // Changing ZoomFactor forces rich edit to reformat; wrap in try because some envs may throw
+            try
+            {
+                rtb.ZoomFactor = 1.0f;
+            }
+            catch
+            {
+                // ignore if zoom is not supported / invalid
+            }
+
+            rtb.PerformLayout();
+            rtb.Refresh();
         }
 
         protected override void OnResize(EventArgs e)
