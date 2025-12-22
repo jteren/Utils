@@ -90,9 +90,7 @@ namespace SQLEventProfiler
                 int newCharIndex = txtFiltersExec.GetFirstCharIndexFromLine(lineIndex);
                 txtFiltersExec.SelectionStart = newCharIndex + line.Length;
                 txtFiltersExec.SelectionLength = 0;
-                ApplyLeftPadding();
-                ColorizeFilters(txtFiltersExec);
-                pnlLineNumbersExec.Invalidate();
+                ApplyLeftPadding(lineIndex);                
             };
 
             txtFilters.VScroll += (s, e) => pnlLineNumbers.Invalidate();
@@ -165,20 +163,31 @@ namespace SQLEventProfiler
             txtFilters.SelectionStart = newCharIndex + line.Length;
             txtFilters.SelectionLength = 0;
 
-            ApplyLeftPadding();
-            ColorizeFilters(txtFilters);
-            pnlLineNumbers.Invalidate();
+            ApplyLeftPadding(lineIndex);            
         }
 
-        private void ApplyLeftPadding()
+        private void ApplyLeftPadding(int lineNumber = 0)
         {
             txtFilters.SelectAll();
             txtFilters.SelectionIndent = 10;
             txtFilters.DeselectAll();
+            GoToLine(txtFilters, lineNumber);
 
             txtFiltersExec.SelectAll();
             txtFiltersExec.SelectionIndent = 10;
             txtFiltersExec.DeselectAll();
+            GoToLine(txtFiltersExec, lineNumber);
+        }
+
+        public void GoToLine(RichTextBox rtb, int lineNumber)
+        {
+            if (lineNumber < 0 || lineNumber >= rtb.Lines.Length)
+                return; // out of range
+
+            int charIndex = rtb.GetFirstCharIndexFromLine(lineNumber);
+            rtb.SelectionStart = charIndex;
+            rtb.SelectionLength = 0;
+            rtb.ScrollToCaret();
         }
 
         private string GetAllFiltersText()
@@ -436,7 +445,7 @@ namespace SQLEventProfiler
                                 rtb.SelectionStart + rtb.SelectionLength);
 
             if (startLine != endLine) { --endLine; }
-            
+
             string[] lines = rtb.Lines;
 
             for (int i = startLine; i <= endLine; i++)
@@ -449,7 +458,7 @@ namespace SQLEventProfiler
 
             rtb.Lines = lines;
 
-            ApplyLeftPadding();
+            ApplyLeftPadding(startLine);
             //ColorizeFilters(txtFiltersExec);
             //pnlLineNumbersExec.Invalidate();
         }
