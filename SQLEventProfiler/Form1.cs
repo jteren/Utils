@@ -100,7 +100,7 @@ namespace SQLEventProfiler
             }
             catch
             {
-                MessageBox.Show(FailedToSaveFilters);
+                 stsStatusLabel.Text = FailedToSaveFilters;
             }
         }
 
@@ -711,13 +711,11 @@ namespace SQLEventProfiler
                 filterEditor = new FilterEditorForm(existingFilters, schemas);
 
                 filterEditor.Width = this.Width - 20;
-
                 filterEditor.StartPosition = FormStartPosition.Manual;
                 filterEditor.Location = new Point(this.Left + 10, this.Bottom - 10);
 
                 filterEditor.Owner = this;
-               // filterEditor.FormBorderStyle = FormBorderStyle.None;
-
+                filterEditor.TopMost = this.TopMost;
                 filterEditor.Show();
             }
             else
@@ -757,8 +755,28 @@ namespace SQLEventProfiler
 
             //remove duplicates
             dynamicFilters = dynamicFilters.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                                 
+            UpperCaseWords(new List<string> { "exec", "select" });
 
             SaveFiltersToFile();
+        }
+
+        private List<string> UpperCaseWords(List<string> words)
+        {
+            foreach (var word in words)
+            {
+                dynamicFilters = dynamicFilters.Select(line =>
+                {
+                    int index = line.IndexOf(word, StringComparison.OrdinalIgnoreCase);
+                    if (index < 0)
+                        return line;
+
+                    return line.Remove(index, word.Length)
+                               .Insert(index, word.ToUpper());
+                }).ToList();
+            }               
+
+            return dynamicFilters;
         }
 
         private bool IsEditorOpen()
@@ -770,7 +788,7 @@ namespace SQLEventProfiler
 
         private void chkAlwaysOnTop_CheckedChanged(object sender, EventArgs e)
         {
-            this.TopMost = chkAlwaysOnTop.Checked;
+            this.TopMost = chkAlwaysOnTop.Checked;            
         }
 
         protected override CreateParams CreateParams
