@@ -285,6 +285,11 @@ namespace SQLEventProfiler
 
         private void DrawLineNumbers(RichTextBox rtb, Panel panel, PaintEventArgs e, int currentLineIndex)
         {
+            // Compute selection start/end lines correctly for any selection length.
+            int selectionStartLine = rtb.GetLineFromCharIndex(rtb.SelectionStart);
+            int endCharIndex = rtb.SelectionStart + Math.Max(0, rtb.SelectionLength - 1);
+            int selectionEndLine = rtb.GetLineFromCharIndex(endCharIndex);
+
             int firstLine = rtb.GetLineFromCharIndex(
                 rtb.GetCharIndexFromPosition(new Point(0, 0)));
 
@@ -312,7 +317,8 @@ namespace SQLEventProfiler
 
                 float x = panel.Width - size.Width - 4;
 
-                if (i == currentLineIndex)
+                // Highlight every selected line in the visible range
+                if (i >= selectionStartLine && i <= selectionEndLine)
                 {
                     using (Brush bg = new SolidBrush(Color.FromArgb(225, 225, 225)))
                     {

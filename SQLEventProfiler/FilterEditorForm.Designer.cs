@@ -200,6 +200,7 @@
             // 
             // btnToggleSelected
             // 
+            btnToggleSelected.Cursor = Cursors.Hand;
             btnToggleSelected.Location = new Point(478, 582);
             btnToggleSelected.Name = "btnToggleSelected";
             btnToggleSelected.Size = new Size(213, 49);
