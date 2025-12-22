@@ -16,10 +16,7 @@ namespace SQLEventProfiler
         {
             InitializeComponent();
             this.ShowInTaskbar = false;
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.ControlBox = false;
-            this.Text = "Filters";
-
+            
             string text = existingFilters;
 
             string[] lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
@@ -227,7 +224,7 @@ namespace SQLEventProfiler
             {
                 main.SelectedFiltersTabIndex = tabFilterCategories.SelectedIndex;
                 main.ResetFilterEditorButton();
-                main.UpdateFiltersFromEditor(GetAllFiltersText());
+                // main.UpdateFiltersFromEditor(GetAllFiltersText());
             }
         }
 
@@ -350,7 +347,26 @@ namespace SQLEventProfiler
             {
                 tabFilterCategories.SelectedIndex = main.SelectedFiltersTabIndex;
             }
-        }      
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            int radius = 22; // match Windows 11 look
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+
+            path.StartFigure();
+            path.AddArc(new Rectangle(0, 0, radius, radius), 180, 90);
+            path.AddArc(new Rectangle(Width - radius, 0, radius, radius), 270, 90);
+            path.AddArc(new Rectangle(Width - radius, Height - radius, radius, radius), 0, 90);
+            path.AddArc(new Rectangle(0, Height - radius, radius, radius), 90, 90);
+            path.CloseFigure();
+
+            this.Region = new Region(path);
+        }
+
+
     }
 
     public class DoubleBufferedPanel : Panel

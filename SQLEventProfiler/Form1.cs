@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.XEvent.XELite;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Timer = System.Windows.Forms.Timer;
 
@@ -709,13 +710,13 @@ namespace SQLEventProfiler
                 var existingFilters = string.Join(Environment.NewLine, dynamicFilters);
                 filterEditor = new FilterEditorForm(existingFilters, schemas);
 
-                filterEditor.Width = this.Width;
+                filterEditor.Width = this.Width - 20;
 
                 filterEditor.StartPosition = FormStartPosition.Manual;
-                filterEditor.Location = new Point(this.Left, this.Bottom - 11);
+                filterEditor.Location = new Point(this.Left + 10, this.Bottom - 10);
 
                 filterEditor.Owner = this;
-                filterEditor.FormBorderStyle = FormBorderStyle.FixedSingle;
+               // filterEditor.FormBorderStyle = FormBorderStyle.None;
 
                 filterEditor.Show();
             }
@@ -729,7 +730,7 @@ namespace SQLEventProfiler
         {
             if (filterEditor != null && !filterEditor.IsDisposed)
             {
-                filterEditor.Location = new Point(this.Left, this.Bottom - 11);
+                filterEditor.Location = new Point(this.Left + 10, this.Bottom - 10);
             }
         }
 
@@ -746,6 +747,17 @@ namespace SQLEventProfiler
                 .Where(line => line.Length > 0)
                 .ToList();
 
+            //remove square brackets
+            dynamicFilters = dynamicFilters
+                .Select(line => line.RemoveSquareBrackets())
+                .ToList();
+
+            //sort by alphabetical order
+            dynamicFilters = dynamicFilters.OrderBy(line => line, StringComparer.OrdinalIgnoreCase).ToList();
+
+            //remove duplicates
+            dynamicFilters = dynamicFilters.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
             SaveFiltersToFile();
         }
 
@@ -754,12 +766,39 @@ namespace SQLEventProfiler
             return filterEditor != null &&
                    !filterEditor.IsDisposed &&
                    filterEditor.Visible;
-        }
+        }       
 
         private void chkAlwaysOnTop_CheckedChanged(object sender, EventArgs e)
         {
             this.TopMost = chkAlwaysOnTop.Checked;
         }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                const int CS_DROPSHADOW = 0x00020000;
+
+                CreateParams cp = base.CreateParams;
+                cp.ClassStyle &= ~CS_DROPSHADOW;  // remove shadow flag
+                return cp;
+            }
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+
+            const int DWMWA_NCRENDERING_POLICY = 2;
+            const int DWMNCRP_DISABLED = 2;
+
+            int attrValue = DWMNCRP_DISABLED;
+            DwmSetWindowAttribute(this.Handle, DWMWA_NCRENDERING_POLICY, ref attrValue, sizeof(int));
+        }
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
     }
 
     public static class StringExtensions
