@@ -49,7 +49,7 @@
             // btnOK
             // 
             btnOK.Font = new Font("Exo 2", 11.1428576F);
-            btnOK.Location = new Point(670, 581);
+            btnOK.Location = new Point(725, 581);
             btnOK.Margin = new Padding(4, 2, 4, 2);
             btnOK.Name = "btnOK";
             btnOK.Size = new Size(131, 49);
@@ -61,7 +61,7 @@
             // btnCancel
             // 
             btnCancel.Font = new Font("Exo 2", 11.1428576F);
-            btnCancel.Location = new Point(807, 581);
+            btnCancel.Location = new Point(862, 581);
             btnCancel.Margin = new Padding(4, 2, 4, 2);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(131, 49);
@@ -201,6 +201,7 @@
             Name = "FilterEditorForm";
             Text = "Filter editor";
             FormClosing += FilterEditorForm_FormClosing;
+            Load += FilterEditorForm_Load;
             tabFilterCategories.ResumeLayout(false);
             tabExec.ResumeLayout(false);
             tabStatements.ResumeLayout(false);

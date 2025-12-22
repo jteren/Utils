@@ -3,13 +3,14 @@
 namespace SQLEventProfiler
 {
     public partial class FilterEditorForm : Form
-    {
-        public string FilterText { get; private set; }
+    {        
         private string originalTextExec;
         private string originalText;
 
         private int currentLineIndexSelect = -1;
-        private int currentLineIndexExec = -1;
+        private int currentLineIndexExec = -1;        
+
+        private List<string> schemaFilters = new List<string>();
 
         public FilterEditorForm(string existingFilters, List<string> schemas)
         {
@@ -17,7 +18,7 @@ namespace SQLEventProfiler
             this.ShowInTaskbar = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.ControlBox = false;
-            this.Text = "Filters";            
+            this.Text = "Filters";
 
             string text = existingFilters;
 
@@ -26,7 +27,7 @@ namespace SQLEventProfiler
             foreach (string line in lines)
             {
                 string normalized = line.StartsWith("# ") ? line.Substring(2) : line;
-                               
+
                 if (normalized.StartsWith("exec", StringComparison.OrdinalIgnoreCase))
                 {
                     originalTextExec += line + Environment.NewLine;
@@ -37,7 +38,15 @@ namespace SQLEventProfiler
                     originalText += line + Environment.NewLine;
                     txtFilters.Text += line + Environment.NewLine;
                 }
-            }            
+                else if (normalized.StartsWith("schema=", StringComparison.OrdinalIgnoreCase))
+                {
+                    string schemaName = normalized.Replace("schema=", "").Trim();
+                    if (!string.IsNullOrWhiteSpace(schemaName))
+                    {
+                        schemaFilters.Add(schemaName);
+                    }
+                }
+            }
 
             txtFilters.BackColor = Color.FromArgb(245, 245, 245);
             txtFiltersExec.BackColor = Color.FromArgb(245, 245, 245);
@@ -45,9 +54,16 @@ namespace SQLEventProfiler
             ApplyLeftPadding();
             ColorizeFilters(txtFiltersExec);
             ColorizeFilters(txtFilters);
-
+                        
             AddCheckboxesToPanel(pnlSchemas, schemas);
-
+            
+            foreach (CheckBox cbx in pnlSchemas.Controls.OfType<CheckBox>())
+            {
+                if (schemaFilters.Contains(cbx.Tag.ToString()))
+                {
+                    cbx.Checked = true;
+                }
+            }
 
             txtFilters.SelectionChanged += txtFilters_SelectionChanged;
             pnlLineNumbers.Paint += pnlLineNumbers_Paint;
@@ -74,7 +90,7 @@ namespace SQLEventProfiler
                 if (line.StartsWith("#"))
                     line = line.Substring(1).Trim();
                 else
-                    line = "# " + line;            
+                    line = "# " + line;
                 lines[lineIndex] = line;
                 txtFiltersExec.Lines = lines;
                 int newCharIndex = txtFiltersExec.GetFirstCharIndexFromLine(lineIndex);
@@ -107,15 +123,15 @@ namespace SQLEventProfiler
             Panel spacer = new Panel();
             spacer.Width = 15;
             spacer.Height = 20;
-            spacer.Location = new Point(0, 0); // margin
+            spacer.Location = new Point(0, 0);
             panel.Controls.Add(spacer);
 
             for (int i = 0; i < items.Count; i++)
             {
                 CheckBox cb = new CheckBox();
-                cb.Text = items[i];                                
-                cb.Name = $"chk{items[i]}";                 
-                cb.Tag = items[i];                
+                cb.Text = items[i];
+                cb.Name = $"chk{items[i]}";
+                cb.Tag = items[i];
                 cb.AutoSize = false;
                 cb.Width = 290;
                 cb.Height = cb.PreferredSize.Height; // ensures correct height
@@ -145,7 +161,7 @@ namespace SQLEventProfiler
             if (line.StartsWith("#"))
                 line = line.Substring(1).Trim();
             else
-                line = "# " + line;            
+                line = "# " + line;
 
             lines[lineIndex] = line;
             txtFilters.Lines = lines;
@@ -170,8 +186,6 @@ namespace SQLEventProfiler
             txtFiltersExec.DeselectAll();
         }
 
-        // TODO when matching against filters, ignore leading/trailing whitespace and also replace [ ] with nothing
-
         private string GetAllFiltersText()
         {
             StringBuilder sb = new StringBuilder();
@@ -183,12 +197,17 @@ namespace SQLEventProfiler
             {
                 sb.AppendLine(txtFiltersExec.Text.Trim());
             }
+
+            foreach (CheckBox cbx in pnlSchemas.Controls.OfType<CheckBox>())
+            {
+                sb.AppendLine($"{(cbx.Checked ? $"schema={cbx.Tag}" : "")}");
+            }
+
             return sb.ToString().TrimEnd();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            
             DialogResult = DialogResult.OK;
 
             if (Owner is Form1 main)
@@ -203,10 +222,10 @@ namespace SQLEventProfiler
         }
 
         private void FilterEditorForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            // Save filters back to main form
+        {            
             if (Owner is Form1 main)
             {
+                main.SelectedFiltersTabIndex = tabFilterCategories.SelectedIndex;
                 main.ResetFilterEditorButton();
                 main.UpdateFiltersFromEditor(GetAllFiltersText());
             }
@@ -222,7 +241,7 @@ namespace SQLEventProfiler
                 main.ResetFilterEditorButton();
             }
         }
-               
+
         private void ColorizeFilters(RichTextBox rtb)
         {
             int selectionStart = txtFilters.SelectionStart;
@@ -314,19 +333,24 @@ namespace SQLEventProfiler
             }
         }
 
-
         private void pnlLineNumbers_Paint(object sender, PaintEventArgs e)
         {
             DrawLineNumbers(txtFilters, pnlLineNumbers, e, currentLineIndexSelect);
-                                  
         }
 
         private void txtFilters_SelectionChanged(object sender, EventArgs e)
         {
             currentLineIndexSelect = txtFilters.GetLineFromCharIndex(txtFilters.SelectionStart);
             pnlLineNumbers.Invalidate();
+        }
 
-        }       
+        private void FilterEditorForm_Load(object sender, EventArgs e)
+        {
+            if (Owner is Form1 main)
+            {
+                tabFilterCategories.SelectedIndex = main.SelectedFiltersTabIndex;
+            }
+        }      
     }
 
     public class DoubleBufferedPanel : Panel

@@ -8,14 +8,24 @@ namespace SQLEventProfiler
 {
     public partial class Form1 : Form
     {
-        
-
         private CancellationTokenSource cts;
         private Task readTask;
         private StreamWriter logWriter;
 
         private string localServerName = Environment.MachineName;
         private const string sessionName = "jantest_session123";
+        private const string ParisPassword = "Paris";
+        private const string HooverPassword = "Hoover";
+        private const string saUserName = "sa";
+        private const string ShowFilters = "Show Filters";
+        private const string HideFilters = "Hide Filters";
+        private const string Running = "Running...";
+        private const string Connecting = " Connecting...";
+        private const string Stopped = " Stopped.";
+        private const string FailedToConnect = " Failed to connect.";
+        private const string SQLError = " SQL Error.";
+        private const string SessionStoppedUnexpectedly = " Session stopped unexpectedly.";
+        private const string FailedToSaveFilters = " Failed to save filters.";
 
         private bool validConnection = false;
         private string connString = string.Empty;
@@ -28,7 +38,7 @@ namespace SQLEventProfiler
 
         private Timer statusTimer;
         private int spinnerIndex = 0;
-        private readonly string[] spinnerFrames = { "Running...", "", "Running...", "" };
+        private readonly string[] spinnerFrames = { Running, "", Running, "" };
 
         private Timer sessionCheckTimer;
 
@@ -38,6 +48,8 @@ namespace SQLEventProfiler
 
         private List<string> schemas = new List<string>();
         
+        public int SelectedFiltersTabIndex { get; set; } = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -51,8 +63,7 @@ namespace SQLEventProfiler
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
             statusTimer.Tick += StatusTimer_Tick;
-
-            // Setup timer
+                        
             sessionRunTimeTimer = new Timer();
             sessionRunTimeTimer.Interval = 10; // 10ms
             sessionRunTimeTimer.Tick += SessionRunTimeTimer_Tick;
@@ -88,7 +99,7 @@ namespace SQLEventProfiler
             }
             catch
             {
-                MessageBox.Show("Failed to save filters.");
+                MessageBox.Show(FailedToSaveFilters);
             }
         }
 
@@ -121,11 +132,11 @@ namespace SQLEventProfiler
                         if (string.IsNullOrEmpty(exists) || string.IsNullOrEmpty(running))
                         {
                             // Session is missing or not running                            
-                            sessionRunTimeTimer.Stop();
-                            statusTimer.Stop();
-                            sessionCheckTimer.Stop();
+                            sessionRunTimeTimer?.Stop();
+                            statusTimer?.Stop();
+                            sessionCheckTimer?.Stop();
 
-                            stsStatusLabel.Text = " Session stopped unexpectedly.";
+                            stsStatusLabel.Text = SessionStoppedUnexpectedly;
                             lblStopwatch.Text = "00:00:00.00";
                             UnlockControls();
 
@@ -138,7 +149,7 @@ namespace SQLEventProfiler
             }
         }
 
-        private async Task LoadDatabaseSchemasAsync(SqlConnection conn)
+        public async Task LoadDatabaseSchemasAsync(SqlConnection conn)
         {
             if (conn == null) throw new ArgumentNullException(nameof(conn));
                         
@@ -192,8 +203,8 @@ namespace SQLEventProfiler
             cbxServer.Items.Clear();
             cbxServer.Items.Add($"{localServerName}");
             cbxServer.Items.Add("uksestdevsql01.ukest.lan"); 
-            cbxServer.Items.Add("uksestsupsql01.ukest.lan"); // port 1433
-            cbxServer.Items.Add(@"uksestsupsql01.ukest.lan\SQL2022,1533"); // port 1533           
+            cbxServer.Items.Add("uksestsupsql01.ukest.lan"); 
+            cbxServer.Items.Add(@"uksestsupsql01.ukest.lan\SQL2022");          
         }
 
         private void PopulateAuthTypes()
@@ -213,8 +224,7 @@ namespace SQLEventProfiler
           
             exitItem.Click += (s, e) => this.Close();
 
-            fileMenuItem.DropDownItems.Add(exitItem);
-                      
+            fileMenuItem.DropDownItems.Add(exitItem);                      
 
             mspMenu.Items.Add(fileMenuItem);           
             mspMenu.Items.Add(helpMenuItem);
@@ -231,18 +241,33 @@ namespace SQLEventProfiler
             txtLogFile.Text = logFile;
             chkClearLogBeforeStart.Checked = true;
             stsStatus.Padding = new Padding(20, 0, 0, 0); // left, top, right, bottom
-
         }
-
-        
-
-        private string BuildConnectionString()
+                
+        public string BuildConnectionString(bool local = false, string database = "eSightFeature")
         {
-            //return "Server=JAN-PC;Database=master;TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+            if (local)
+            {
+                return $"Server={localServerName};Database={database};TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
+            }              
+
+            if (string.IsNullOrWhiteSpace(cbxServer.Text))
+            {
+                throw new InvalidOperationException("Server name is required.");
+            }
 
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
-            sb.Append($"Server={server};Database=master;TrustServerCertificate=True;Connect Timeout=2;");
+
+            if(server.Contains(@"2022"))
+            {
+                sb.Append($"Server={server},1533;");                
+            }
+            else
+            {
+                sb.Append($"Server={server};");
+            }
+
+            sb.Append($"Database=master;TrustServerCertificate=True;Connect Timeout=2;");
             sb.Append($"User ID={txtUserName.Text.Trim()};Password={txtPassword.Text.Trim()};");
             return sb.ToString();
         }
@@ -285,11 +310,18 @@ namespace SQLEventProfiler
         {
             var server = cbxServer.SelectedItem.ToString();
 
-            cbxAuthenticationType.SelectedIndex = 0;
-            txtUserName.Enabled = true;
-            txtUserName.Text = "sa";
-            txtPassword.Enabled = true;
-            txtPassword.Text = "Paris";
+            cbxAuthenticationType.SelectedIndex = 0;           
+            txtUserName.Text = saUserName;
+            
+            if (server.Equals(localServerName) 
+                || server.Equals("uksestdevsql01.ukest.lan"))
+            {                
+                txtPassword.Text = ParisPassword;                
+            }
+            else
+            {
+                txtPassword.Text = HooverPassword;
+            }                        
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -300,7 +332,7 @@ namespace SQLEventProfiler
         private async void btnStart_Click(object sender, EventArgs e)
         {            
             LockControls();
-            stsStatusLabel.Text = " Connecting...";
+            stsStatusLabel.Text = Connecting;
             connString = BuildConnectionString();
 
             try
@@ -347,7 +379,7 @@ namespace SQLEventProfiler
 
                 if (ex.Message.Contains("error occurred while establishing a connection", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    stsStatusLabel.Text = " Failed to connect.";
+                    stsStatusLabel.Text = FailedToConnect;
                 }
                 else if (ex.Message.Contains("Login failed for user", StringComparison.InvariantCultureIgnoreCase))
                 {                       
@@ -355,7 +387,7 @@ namespace SQLEventProfiler
                 }
                 else
                 {
-                    stsStatusLabel.Text = " SQL Error";
+                    stsStatusLabel.Text = SQLError;
                 }
                 SqlConnection.ClearAllPools();
 
@@ -366,7 +398,7 @@ namespace SQLEventProfiler
             catch (Exception ex)
             {
                 UnlockControls();
-                stsStatusLabel.Text = " Failed to connect.";
+                stsStatusLabel.Text = FailedToConnect;
                 MessageBox.Show($"General error: {ex.Message}");
                 return;
             }
@@ -375,7 +407,7 @@ namespace SQLEventProfiler
             var xeStream = new XELiveEventStreamer(connString, $"{sessionName}");
 
             btnStop.Enabled = true;            
-            stsStatusLabel.Text = "";// " Running... ";
+            stsStatusLabel.Text = ""; // " Running... ";
 
             spinnerIndex = 0;
             statusTimer.Start();
@@ -433,10 +465,21 @@ namespace SQLEventProfiler
             if (string.IsNullOrWhiteSpace(sql))
                 return false;
 
-            foreach (var filter in dynamicFilters.Where(line => line.Length > 0 && !line.Trim().StartsWith("#")))
+            foreach (var filter in dynamicFilters.Where(line => line.Length > 0 && !line.Trim().StartsWith("#") && !line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
             {
-                if (sql.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                if (sql.RemoveSquareBrackets().Contains(filter.RemoveSquareBrackets(), StringComparison.OrdinalIgnoreCase))
+                    return true;                
+            }
+            // Schema based filters
+            foreach (var filter in dynamicFilters.Where(line => line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
+            {
+                var schemaToFilter = filter.Substring("schema=".Length).Trim();
+                if (string.IsNullOrWhiteSpace(schemaToFilter))
+                    continue;
+                if (sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase))                    
+                {
                     return true;
+                }
             }
 
             return false;
@@ -482,28 +525,24 @@ namespace SQLEventProfiler
 
         // TODO add a queue for messages 
         // add button on the bottom of the filters to toggle selected rows #
-
-        // for schemas add uncheck all option so no schemas are filtered.
-
-        // also add global - DISABLE Filters so everything will get logged.
-
-        // Also check what happens if the log file is deleted while running.
-
-        // check what happes if the XE session is deleted while running.
-
+        // remove duplicated rows on save
+                
         private async void btnStop_Click(object sender, EventArgs e)
         {
             UnlockControls();
             StopSessionAndCleanup();
-            statusTimer.Stop();
-            sessionRunTimeTimer.Stop();
+            statusTimer?.Stop();
+            sessionRunTimeTimer?.Stop();
+            sessionCheckTimer?.Stop();
             lblStopwatch.Text = "00:00:00.00";
-            stsStatusLabel.Text = " Stopped";
+            stsStatusLabel.Text = Stopped;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            statusTimer.Stop();
+            statusTimer?.Stop();
+            sessionRunTimeTimer?.Stop();
+            sessionCheckTimer?.Stop();
             StopSessionAndCleanup();
         }
 
@@ -635,13 +674,13 @@ namespace SQLEventProfiler
         {
             string currentPassword = txtPassword.Text;
 
-            if (string.Equals(currentPassword, "Paris") || string.IsNullOrWhiteSpace(currentPassword))
+            if (string.Equals(currentPassword, ParisPassword) || string.IsNullOrWhiteSpace(currentPassword))
             {
-                txtPassword.Text = "Hoover";
+                txtPassword.Text = HooverPassword;
             }
             else
             {
-                txtPassword.Text = "Paris";
+                txtPassword.Text = ParisPassword;
             }
         }
 
@@ -649,26 +688,25 @@ namespace SQLEventProfiler
         {
             if (IsEditorOpen())
             {
-                btnShowFilterEditor.Text = "Show Filters";
+                btnShowFilterEditor.Text = ShowFilters;
             }
             else
             {
-                btnShowFilterEditor.Text = "Hide Filters";
+                btnShowFilterEditor.Text = HideFilters;
             }
 
             if (filterEditor == null || filterEditor.IsDisposed)
             {
-
                 if (schemas.Count < 1)
                 {
-                    using (var conn = new SqlConnection(BuildConnectionString()))
+                    using (var conn = new SqlConnection(BuildConnectionString(local:true)))
                     {
                         await LoadDatabaseSchemasAsync(conn);
                     }
                 }
 
-                var existing = string.Join(Environment.NewLine, dynamicFilters);
-                filterEditor = new FilterEditorForm(existing, schemas);
+                var existingFilters = string.Join(Environment.NewLine, dynamicFilters);
+                filterEditor = new FilterEditorForm(existingFilters, schemas);
                                 
                 filterEditor.Width = this.Width;
                                 
@@ -696,7 +734,7 @@ namespace SQLEventProfiler
 
         public void ResetFilterEditorButton()
         {
-            btnShowFilterEditor.Text = "Show Filters";
+            btnShowFilterEditor.Text = ShowFilters;
         }
 
         public void UpdateFiltersFromEditor(string text)
@@ -723,7 +761,7 @@ namespace SQLEventProfiler
         public static string TrimEmptyLines(this string input)
         {
             if (input == null) return null;
-                        
+
             var lines = input.Split(new[] { "\r\n", "\r", "\n", Environment.NewLine }, StringSplitOptions.None);
 
             int start = 0;
@@ -734,9 +772,15 @@ namespace SQLEventProfiler
             while (end >= start && string.IsNullOrWhiteSpace(lines[end]))
                 end--;
 
-            if (start > end) return string.Empty; 
+            if (start > end) return string.Empty;
 
             return string.Join(Environment.NewLine, lines.AsSpan(start, end - start + 1).ToArray());
+        }
+
+        public static string RemoveSquareBrackets(this string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            return input.Replace("[", "").Replace("]", "").Trim();
         }
     }
 }
