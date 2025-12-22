@@ -51,6 +51,7 @@
             lblStopwatch = new Label();
             mspMenu = new MenuStrip();
             btnShowFilterEditor = new Button();
+            chkAlwaysOnTop = new CheckBox();
             stsStatus.SuspendLayout();
             groupBox1.SuspendLayout();
             grpAuthentication.SuspendLayout();
@@ -297,12 +298,24 @@
             btnShowFilterEditor.UseVisualStyleBackColor = true;
             btnShowFilterEditor.Click += btnShowFilterEditor_Click;
             // 
+            // chkAlwaysOnTop
+            // 
+            chkAlwaysOnTop.AutoSize = true;
+            chkAlwaysOnTop.Location = new Point(488, 542);
+            chkAlwaysOnTop.Name = "chkAlwaysOnTop";
+            chkAlwaysOnTop.Size = new Size(211, 41);
+            chkAlwaysOnTop.TabIndex = 20;
+            chkAlwaysOnTop.Text = "Always on top";
+            chkAlwaysOnTop.UseVisualStyleBackColor = true;
+            chkAlwaysOnTop.CheckedChanged += chkAlwaysOnTop_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(14F, 36F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             ClientSize = new Size(1022, 647);
+            Controls.Add(chkAlwaysOnTop);
             Controls.Add(btnShowFilterEditor);
             Controls.Add(chkClearLogBeforeStart);
             Controls.Add(lblStopwatch);
@@ -358,5 +371,6 @@
         private MenuStrip mspMenu;
         private CheckBox chkClearLogBeforeStart;
         private Button btnShowFilterEditor;
+        private CheckBox chkAlwaysOnTop;
     }
 }

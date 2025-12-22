@@ -47,7 +47,7 @@ namespace SQLEventProfiler
         private FilterEditorForm filterEditor;
 
         private List<string> schemas = new List<string>();
-        
+
         public int SelectedFiltersTabIndex { get; set; } = 0;
 
         public Form1()
@@ -59,11 +59,11 @@ namespace SQLEventProfiler
 
             this.Move += Form1_Move;
             LoadFiltersFromFile();
-            
+
             statusTimer = new Timer();
             statusTimer.Interval = 800; // ms
             statusTimer.Tick += StatusTimer_Tick;
-                        
+
             sessionRunTimeTimer = new Timer();
             sessionRunTimeTimer.Interval = 10; // 10ms
             sessionRunTimeTimer.Tick += SessionRunTimeTimer_Tick;
@@ -152,11 +152,11 @@ namespace SQLEventProfiler
         public async Task LoadDatabaseSchemasAsync(SqlConnection conn)
         {
             if (conn == null) throw new ArgumentNullException(nameof(conn));
-                        
+
             string query = "USE [eSightFeature]; SELECT name FROM sys.schemas ORDER BY name";
 
             try
-            {                
+            {
                 if (conn.State != System.Data.ConnectionState.Open)
                 {
                     await conn.OpenAsync();
@@ -164,15 +164,15 @@ namespace SQLEventProfiler
 
                 using (var cmd = new SqlCommand(query, conn))
                 using (var reader = await cmd.ExecuteReaderAsync())
-                {                   
+                {
                     schemas.Clear();
 
                     while (await reader.ReadAsync())
-                    {                        
+                    {
                         if (!reader.IsDBNull(0))
                         {
                             string schemaName = reader.GetString(0);
-                            if (!string.IsNullOrWhiteSpace(schemaName) 
+                            if (!string.IsNullOrWhiteSpace(schemaName)
                                 && !schemaName.Contains("Test")
                                 && !schemaName.Equals("sys")
                                 && !schemaName.Equals("tSQLt")
@@ -191,7 +191,7 @@ namespace SQLEventProfiler
                 Debug.WriteLine($"LoadDatabaseSchemasAsync error: {ex.Message}");
             }
         }
-        
+
         private void SessionRunTimeTimer_Tick(object sender, EventArgs e)
         {
             TimeSpan elapsed = DateTime.Now - startTime;
@@ -202,9 +202,9 @@ namespace SQLEventProfiler
         {
             cbxServer.Items.Clear();
             cbxServer.Items.Add($"{localServerName}");
-            cbxServer.Items.Add("uksestdevsql01.ukest.lan"); 
-            cbxServer.Items.Add("uksestsupsql01.ukest.lan"); 
-            cbxServer.Items.Add(@"uksestsupsql01.ukest.lan\SQL2022");          
+            cbxServer.Items.Add("uksestdevsql01.ukest.lan");
+            cbxServer.Items.Add("uksestsupsql01.ukest.lan");
+            cbxServer.Items.Add(@"uksestsupsql01.ukest.lan\SQL2022");
         }
 
         private void PopulateAuthTypes()
@@ -216,17 +216,17 @@ namespace SQLEventProfiler
 
         private void SetControls()
         {
-            ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");        
+            ToolStripMenuItem fileMenuItem = new ToolStripMenuItem("File");
             ToolStripMenuItem helpMenuItem = new ToolStripMenuItem("Help");
 
             ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");
 
-          
+
             exitItem.Click += (s, e) => this.Close();
 
-            fileMenuItem.DropDownItems.Add(exitItem);                      
+            fileMenuItem.DropDownItems.Add(exitItem);
 
-            mspMenu.Items.Add(fileMenuItem);           
+            mspMenu.Items.Add(fileMenuItem);
             mspMenu.Items.Add(helpMenuItem);
 
             this.MainMenuStrip = mspMenu;
@@ -242,13 +242,13 @@ namespace SQLEventProfiler
             chkClearLogBeforeStart.Checked = true;
             stsStatus.Padding = new Padding(20, 0, 0, 0); // left, top, right, bottom
         }
-                
+
         public string BuildConnectionString(bool local = false, string database = "eSightFeature")
         {
             if (local)
             {
                 return $"Server={localServerName};Database={database};TrustServerCertificate=True;Connect Timeout=2;Trusted_Connection=True;";
-            }              
+            }
 
             if (string.IsNullOrWhiteSpace(cbxServer.Text))
             {
@@ -258,9 +258,9 @@ namespace SQLEventProfiler
             var sb = new StringBuilder();
             var server = cbxServer.SelectedItem.ToString();
 
-            if(server.Contains(@"2022"))
+            if (server.Contains(@"2022"))
             {
-                sb.Append($"Server={server},1533;");                
+                sb.Append($"Server={server},1533;");
             }
             else
             {
@@ -281,7 +281,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = false;
             txtPassword.Enabled = false;
             btnStart.Enabled = false;
-            btnPasswordSwapper.Enabled = false;         
+            btnPasswordSwapper.Enabled = false;
             chkClearLogBeforeStart.Enabled = false;
         }
         private void UnlockControls()
@@ -300,7 +300,7 @@ namespace SQLEventProfiler
             txtUserName.Enabled = true;
             txtPassword.Enabled = true;
             btnPasswordSwapper.Enabled = true;
-            lblStopwatch.Visible = false;         
+            lblStopwatch.Visible = false;
             chkClearLogBeforeStart.Enabled = true;
         }
 
@@ -310,18 +310,18 @@ namespace SQLEventProfiler
         {
             var server = cbxServer.SelectedItem.ToString();
 
-            cbxAuthenticationType.SelectedIndex = 0;           
+            cbxAuthenticationType.SelectedIndex = 0;
             txtUserName.Text = saUserName;
-            
-            if (server.Equals(localServerName) 
+
+            if (server.Equals(localServerName)
                 || server.Equals("uksestdevsql01.ukest.lan"))
-            {                
-                txtPassword.Text = ParisPassword;                
+            {
+                txtPassword.Text = ParisPassword;
             }
             else
             {
                 txtPassword.Text = HooverPassword;
-            }                        
+            }
         }
 
         private void cbxThisMachine_CheckStateChanged(object sender, EventArgs e)
@@ -330,7 +330,7 @@ namespace SQLEventProfiler
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
-        {            
+        {
             LockControls();
             stsStatusLabel.Text = Connecting;
             connString = BuildConnectionString();
@@ -382,7 +382,7 @@ namespace SQLEventProfiler
                     stsStatusLabel.Text = FailedToConnect;
                 }
                 else if (ex.Message.Contains("Login failed for user", StringComparison.InvariantCultureIgnoreCase))
-                {                       
+                {
                     stsStatusLabel.Text = $" {ex.Message}";
                 }
                 else
@@ -391,7 +391,7 @@ namespace SQLEventProfiler
                 }
                 SqlConnection.ClearAllPools();
 
-              
+
                 UnlockControls();
                 return;
             }
@@ -406,7 +406,7 @@ namespace SQLEventProfiler
             cts = new CancellationTokenSource();
             var xeStream = new XELiveEventStreamer(connString, $"{sessionName}");
 
-            btnStop.Enabled = true;            
+            btnStop.Enabled = true;
             stsStatusLabel.Text = ""; // " Running... ";
 
             spinnerIndex = 0;
@@ -441,9 +441,8 @@ namespace SQLEventProfiler
                         string logEntry =
                           $"{Environment.NewLine}-- {xevent.Timestamp:yyyy-MM-dd HH:mm:ss} | " +
                           $"{xevent.Actions.GetValueOrDefault("database_name")} | " +
+                          $"{xevent.Actions.GetValueOrDefault("client_hostname")} | " +
                           $"{xevent.Actions.GetValueOrDefault("username")}{Environment.NewLine}" +
-                          //$"{xevent.Name} | " +
-                          //$"  Host: {xevent.Actions.GetValueOrDefault("client_hostname")}{Environment.NewLine}" +
                           $"  {textToShow.TrimEmptyLines()}";
 
                         WriteLog(logEntry);
@@ -468,7 +467,7 @@ namespace SQLEventProfiler
             foreach (var filter in dynamicFilters.Where(line => line.Length > 0 && !line.Trim().StartsWith("#") && !line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
             {
                 if (sql.RemoveSquareBrackets().Contains(filter.RemoveSquareBrackets(), StringComparison.OrdinalIgnoreCase))
-                    return true;                
+                    return true;
             }
             // Schema based filters
             foreach (var filter in dynamicFilters.Where(line => line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
@@ -476,7 +475,7 @@ namespace SQLEventProfiler
                 var schemaToFilter = filter.Substring("schema=".Length).Trim();
                 if (string.IsNullOrWhiteSpace(schemaToFilter))
                     continue;
-                if (sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase))                    
+                if (sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -526,7 +525,7 @@ namespace SQLEventProfiler
         // TODO add a queue for messages 
         // add button on the bottom of the filters to toggle selected rows #
         // remove duplicated rows on save
-                
+
         private async void btnStop_Click(object sender, EventArgs e)
         {
             UnlockControls();
@@ -576,7 +575,7 @@ namespace SQLEventProfiler
             }
             else
             {
-                string userToLog = txtUserToLog.Text.Trim();
+                string userToLog = txtUserToLog.Text.Trim(); // TODO probably change this to hostname
                 userOrHostNameFilter = $" AND (sqlserver.username LIKE N'%{userToLog}%')";
             }
 
@@ -699,7 +698,7 @@ namespace SQLEventProfiler
             {
                 if (schemas.Count < 1)
                 {
-                    using (var conn = new SqlConnection(BuildConnectionString(local:true)))
+                    using (var conn = new SqlConnection(BuildConnectionString(local: true)))
                     {
                         await LoadDatabaseSchemasAsync(conn);
                     }
@@ -707,21 +706,21 @@ namespace SQLEventProfiler
 
                 var existingFilters = string.Join(Environment.NewLine, dynamicFilters);
                 filterEditor = new FilterEditorForm(existingFilters, schemas);
-                                
+
                 filterEditor.Width = this.Width;
-                                
+
                 filterEditor.StartPosition = FormStartPosition.Manual;
                 filterEditor.Location = new Point(this.Left, this.Bottom - 11);
-                                
+
                 filterEditor.Owner = this;
                 filterEditor.FormBorderStyle = FormBorderStyle.FixedSingle;
 
                 filterEditor.Show();
             }
             else
-            {                
+            {
                 filterEditor.Close();
-            }          
+            }
         }
 
         private void Form1_Move(object sender, EventArgs e)
@@ -753,7 +752,12 @@ namespace SQLEventProfiler
             return filterEditor != null &&
                    !filterEditor.IsDisposed &&
                    filterEditor.Visible;
-        }        
+        }
+
+        private void chkAlwaysOnTop_CheckedChanged(object sender, EventArgs e)
+        {
+            this.TopMost = chkAlwaysOnTop.Checked;
+        }
     }
 
     public static class StringExtensions
