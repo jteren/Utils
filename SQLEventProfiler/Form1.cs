@@ -239,7 +239,8 @@ namespace SQLEventProfiler
             cbxThisMachine.Checked = true;
             btnStop.Enabled = false;
             txtLogFile.Text = logFile;
-            chkClearLogBeforeStart.Checked = true;
+            chkClearLogBeforeStart.Checked = false;
+            chkAlwaysOnTop.Checked = true;
             stsStatus.Padding = new Padding(20, 0, 0, 0); // left, top, right, bottom
         }
 
@@ -612,7 +613,7 @@ namespace SQLEventProfiler
                     AND (statement NOT LIKE '%DECLARE @edition sysname%')   
                     AND (statement NOT LIKE '%SERVERPROPERTY%') 
                     AND (statement <> 'exec usp_GetSystemBranding')  
-                    AND (statement NOT LIKE 'usp_GetMRIDocsConfig%')  
+                    AND (statement NOT LIKE '%usp_GetMRIDocsConfig%')  
                     AND (statement NOT LIKE '%usp_AgoraGeneralSettings_Get%')  
                     AND (statement NOT LIKE '%usp_Branding_IsDirty%')  
                     AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 

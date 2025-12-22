@@ -136,7 +136,7 @@
             groupBox1.Size = new Size(380, 158);
             groupBox1.TabIndex = 7;
             groupBox1.TabStop = false;
-            groupBox1.Text = "Log:";
+            groupBox1.Text = "Log";
             // 
             // txtUserToLog
             // 

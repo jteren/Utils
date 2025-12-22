@@ -80,6 +80,7 @@
             txtFilters.Size = new Size(904, 496);
             txtFilters.TabIndex = 3;
             txtFilters.Text = "";
+            txtFilters.WordWrap = false;
             txtFilters.SelectionChanged += txtFilters_SelectionChanged;
             txtFilters.TextChanged += txtFilters_TextChanged;
             // 
@@ -143,6 +144,7 @@
             txtFiltersExec.Size = new Size(904, 496);
             txtFiltersExec.TabIndex = 5;
             txtFiltersExec.Text = "";
+            txtFiltersExec.WordWrap = false;
             txtFiltersExec.TextChanged += txtFiltersExec_TextChanged;
             // 
             // pnlLineNumbersExec
