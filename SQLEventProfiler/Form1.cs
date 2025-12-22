@@ -525,9 +525,7 @@ namespace SQLEventProfiler
         }
 
         // TODO add a queue for messages 
-        // add button on the bottom of the filters to toggle selected rows #
-        // remove duplicated rows on save
-        // remove square brackets on save and order alphabetically
+        // add button on the bottom of the filters to toggle selected rows #        
 
         private async void btnStop_Click(object sender, EventArgs e)
         {
@@ -578,8 +576,8 @@ namespace SQLEventProfiler
             }
             else
             {
-                string userToLog = txtUserToLog.Text.Trim(); // TODO probably change this to hostname
-                userOrHostNameFilter = $" AND (sqlserver.username LIKE N'%{userToLog}%')";
+                string userToLog = txtUserToLog.Text.Trim(); 
+                userOrHostNameFilter = $" AND (sqlserver.client_hostname LIKE N'%{userToLog}%')";
             }
 
             string checkSql = $@"
