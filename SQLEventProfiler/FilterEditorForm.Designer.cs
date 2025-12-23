@@ -41,6 +41,7 @@
             tabSchemas = new TabPage();
             pnlSchemas = new Panel();
             btnToggleSelected = new Button();
+            chkCaptureOnlySelected = new CheckBox();
             tabFilterCategories.SuspendLayout();
             tabExec.SuspendLayout();
             tabStatements.SuspendLayout();
@@ -51,7 +52,7 @@
             // 
             btnOK.Cursor = Cursors.Hand;
             btnOK.Font = new Font("Exo 2", 11.1428576F);
-            btnOK.Location = new Point(724, 581);
+            btnOK.Location = new Point(724, 588);
             btnOK.Margin = new Padding(4, 2, 4, 2);
             btnOK.Name = "btnOK";
             btnOK.Size = new Size(131, 49);
@@ -64,7 +65,7 @@
             // 
             btnCancel.Cursor = Cursors.Hand;
             btnCancel.Font = new Font("Exo 2", 11.1428576F);
-            btnCancel.Location = new Point(862, 581);
+            btnCancel.Location = new Point(862, 588);
             btnCancel.Margin = new Padding(4, 2, 4, 2);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(131, 49);
@@ -105,7 +106,7 @@
             chkCloseOnSave.Checked = true;
             chkCloseOnSave.CheckState = CheckState.Checked;
             chkCloseOnSave.Font = new Font("Exo 2", 11.1428576F);
-            chkCloseOnSave.Location = new Point(31, 586);
+            chkCloseOnSave.Location = new Point(37, 592);
             chkCloseOnSave.Margin = new Padding(4, 2, 4, 2);
             chkCloseOnSave.Name = "chkCloseOnSave";
             chkCloseOnSave.Size = new Size(209, 43);
@@ -125,6 +126,7 @@
             tabFilterCategories.SelectedIndex = 0;
             tabFilterCategories.Size = new Size(987, 559);
             tabFilterCategories.TabIndex = 6;
+            tabFilterCategories.SelectedIndexChanged += tabFilterCategories_SelectedIndexChanged;
             // 
             // tabExec
             // 
@@ -201,7 +203,7 @@
             // btnToggleSelected
             // 
             btnToggleSelected.Cursor = Cursors.Hand;
-            btnToggleSelected.Location = new Point(478, 582);
+            btnToggleSelected.Location = new Point(478, 589);
             btnToggleSelected.Name = "btnToggleSelected";
             btnToggleSelected.Size = new Size(213, 49);
             btnToggleSelected.TabIndex = 7;
@@ -209,11 +211,25 @@
             btnToggleSelected.UseVisualStyleBackColor = true;
             btnToggleSelected.Click += btnToggleSelected_Click;
             // 
+            // chkCaptureOnlySelected
+            // 
+            chkCaptureOnlySelected.AutoSize = true;
+            chkCaptureOnlySelected.BackColor = Color.Transparent;
+            chkCaptureOnlySelected.Location = new Point(341, 594);
+            chkCaptureOnlySelected.Name = "chkCaptureOnlySelected";
+            chkCaptureOnlySelected.Size = new Size(299, 41);
+            chkCaptureOnlySelected.TabIndex = 8;
+            chkCaptureOnlySelected.Text = "Capture only selected";
+            chkCaptureOnlySelected.UseVisualStyleBackColor = false;
+            chkCaptureOnlySelected.CheckedChanged += chkCaptureOnlySelected_CheckedChanged;
+            chkCaptureOnlySelected.Click += chkCaptureOnlySelected_Click;
+            // 
             // FilterEditorForm
             // 
             AutoScaleDimensions = new SizeF(14F, 36F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(933, 654);
+            Controls.Add(chkCaptureOnlySelected);
             Controls.Add(btnToggleSelected);
             Controls.Add(tabFilterCategories);
             Controls.Add(chkCloseOnSave);
@@ -246,5 +262,6 @@
         private DoubleBufferedPanel pnlLineNumbersExec;
         private Panel pnlSchemas;
         private Button btnToggleSelected;
+        private CheckBox chkCaptureOnlySelected;
     }
 }

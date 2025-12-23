@@ -433,9 +433,17 @@ namespace SQLEventProfiler
                                 ? statementText
                                 : objectName;
 
-                        if (ShouldIgnore(batchText) ||
-                            ShouldIgnore(statementText) ||
-                            ShouldIgnore(objectName))
+                        bool captureOnly = Properties.Settings.Default.CaptureOnlySelected;
+                        
+                        if (captureOnly)
+                        {
+                            if ((!string.IsNullOrWhiteSpace(statementText) && ShouldIgnore(statementText)) ||
+                                (!string.IsNullOrWhiteSpace(batchText) && ShouldIgnore(batchText)))
+                            {
+                                return Task.CompletedTask;
+                            }
+                        }
+                        else if (ShouldIgnore(batchText) || ShouldIgnore(statementText) || ShouldIgnore(objectName))
                         {
                             return Task.CompletedTask;
                         }
@@ -466,22 +474,63 @@ namespace SQLEventProfiler
             if (string.IsNullOrWhiteSpace(sql))
                 return false;
 
+            var schemaFilters = dynamicFilters
+                .Where(line => line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Schema based filters
+            var captureOnlySelectedSchemasChecked = Properties.Settings.Default.CaptureOnlySelected;
+            bool schemaIsMatchedInFilters = false;
+
+            if (captureOnlySelectedSchemasChecked)
+            {
+                foreach (var filter in schemaFilters)
+                {
+                    var schemaToFilter = filter.Substring("schema=".Length).Trim();
+
+                    if (string.IsNullOrWhiteSpace(schemaToFilter))
+                    {
+                        continue;
+                    }
+                    
+                    if ((sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase)) ||
+                        (sql.RemoveSquareBrackets().StartsWith($"select {schemaToFilter}.", StringComparison.OrdinalIgnoreCase)) ||
+                        (sql.RemoveSquareBrackets().Contains($"from {schemaToFilter}.", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        schemaIsMatchedInFilters = true;
+                        return false; 
+                    }
+                }
+                if (!schemaIsMatchedInFilters) 
+                {
+                    return true; 
+                }
+            }
+
+            foreach (var filter in schemaFilters)
+            {
+                var schemaToFilter = filter.Substring("schema=".Length).Trim();
+
+                if (string.IsNullOrWhiteSpace(schemaToFilter))
+                {
+                    continue;
+                }
+                                
+                if (sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (captureOnlySelectedSchemasChecked)
+                    {
+                        break;                         
+                    }
+                    return true; 
+                }
+            }
+
             foreach (var filter in dynamicFilters.Where(line => line.Length > 0 && !line.Trim().StartsWith("#") && !line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
             {
                 if (sql.RemoveSquareBrackets().Contains(filter.RemoveSquareBrackets(), StringComparison.OrdinalIgnoreCase))
                     return true;
-            }
-            // Schema based filters
-            foreach (var filter in dynamicFilters.Where(line => line.StartsWith("schema=", StringComparison.OrdinalIgnoreCase)))
-            {
-                var schemaToFilter = filter.Substring("schema=".Length).Trim();
-                if (string.IsNullOrWhiteSpace(schemaToFilter))
-                    continue;
-                if (sql.RemoveSquareBrackets().StartsWith($"exec {schemaToFilter}.", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
+            }            
 
             return false;
         }
@@ -524,8 +573,7 @@ namespace SQLEventProfiler
             }
         }
 
-        // TODO add a queue for messages 
-        // add button on the bottom of the filters to toggle selected rows #        
+        // TODO add a queue for messages         
 
         private async void btnStop_Click(object sender, EventArgs e)
         {
@@ -612,12 +660,12 @@ namespace SQLEventProfiler
                     AND (statement NOT LIKE '%master.sys.databases%')   
                     AND (statement NOT LIKE '%DECLARE @edition sysname%')   
                     AND (statement NOT LIKE '%SERVERPROPERTY%') 
-                    AND (statement <> 'exec usp_GetSystemBranding')  
-                    AND (statement NOT LIKE '%usp_GetMRIDocsConfig%')  
-                    AND (statement NOT LIKE '%usp_AgoraGeneralSettings_Get%')  
-                    AND (statement NOT LIKE '%usp_Branding_IsDirty%')  
-                    AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 
-                    AND (statement NOT LIKE '%usp_ProcessLoggedInUserRequest%')  
+                        AND (statement <> 'exec usp_GetSystemBranding')  
+                        AND (statement NOT LIKE '%usp_GetMRIDocsConfig%')  
+                        AND (statement NOT LIKE '%usp_AgoraGeneralSettings_Get%')  
+                        AND (statement NOT LIKE '%usp_Branding_IsDirty%')  
+                        AND (statement NOT LIKE 'exec Diagnostics.usp_Log_PageUsage%') 
+                        AND (statement NOT LIKE '%usp_ProcessLoggedInUserRequest%')  
                     AND (statement NOT LIKE '%from master.sys.master_files%')                      
                     AND (sqlserver.client_app_name NOT LIKE '%Transact-SQL IntelliSense%')
                     AND (sqlserver.client_app_name NOT LIKE '%Red Gate Software Ltd - SQL Prompt%') 
@@ -707,7 +755,7 @@ namespace SQLEventProfiler
 
                 var existingFilters = string.Join(Environment.NewLine, dynamicFilters);
                 filterEditor = new FilterEditorForm(existingFilters, schemas);
-
+                
                 filterEditor.Width = this.Width - 20;
                 filterEditor.StartPosition = FormStartPosition.Manual;
                 filterEditor.Location = new Point(this.Left + 10, this.Bottom - 10);

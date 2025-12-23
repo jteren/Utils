@@ -11,12 +11,30 @@ namespace SQLEventProfiler
         private int currentLineIndexSelect = -1;
         private int currentLineIndexExec = -1;
 
+        private Color schemaToCaptureColor = Color.FromArgb(100, Color.LightGreen);
+
         private List<string> schemaFilters = new List<string>();
 
         public FilterEditorForm(string existingFilters, List<string> schemas)
         {
             InitializeComponent();
             this.ShowInTaskbar = false;
+
+            chkCaptureOnlySelected.Checked = Properties.Settings.Default.CaptureOnlySelected;
+
+            chkCaptureOnlySelected.UseVisualStyleBackColor = false;
+
+            if (chkCaptureOnlySelected.Checked)
+            {
+                chkCaptureOnlySelected.BackColor = schemaToCaptureColor;
+            }
+            else
+            {
+                chkCaptureOnlySelected.BackColor = Color.Transparent;
+            }
+            
+            chkCaptureOnlySelected.Padding = new Padding(5, 0, 0, 0);
+
 
             string text = existingFilters;
 
@@ -90,7 +108,7 @@ namespace SQLEventProfiler
                 int newCharIndex = txtFiltersExec.GetFirstCharIndexFromLine(lineIndex);
                 txtFiltersExec.SelectionStart = newCharIndex + line.Length;
                 txtFiltersExec.SelectionLength = 0;
-                ApplyLeftPadding(lineIndex);                
+                ApplyLeftPadding(lineIndex);
             };
 
             txtFilters.VScroll += (s, e) => pnlLineNumbers.Invalidate();
@@ -100,6 +118,19 @@ namespace SQLEventProfiler
             txtFiltersExec.VScroll += (s, e) => pnlLineNumbersExec.Invalidate();
             txtFiltersExec.TextChanged += (s, e) => pnlLineNumbersExec.Invalidate();
             txtFiltersExec.Resize += (s, e) => pnlLineNumbersExec.Invalidate();
+
+            if (tabFilterCategories.SelectedIndex < 2)
+            {
+                btnToggleSelected.Visible = true;
+                chkCaptureOnlySelected.Visible = false;
+            }
+            else
+            {
+                btnToggleSelected.Visible = false;
+                chkCaptureOnlySelected.Visible = true;
+            }
+
+            
 
         }
 
@@ -114,7 +145,7 @@ namespace SQLEventProfiler
             int spacing = 5;
 
             Panel spacer = new Panel();
-            spacer.Width = 15;
+            spacer.Width = 10;
             spacer.Height = 20;
             spacer.Location = new Point(0, 0);
             panel.Controls.Add(spacer);
@@ -131,6 +162,9 @@ namespace SQLEventProfiler
                 cb.AutoEllipsis = true;
                 cb.UseCompatibleTextRendering = true; // <-- fixes vertical alignment
 
+                cb.UseVisualStyleBackColor = false;
+                cb.Padding = new Padding(5, 0, 0, 0);
+
                 int col = i % colCount;
                 int row = i / colCount;
 
@@ -139,6 +173,46 @@ namespace SQLEventProfiler
                 cb.Width = cbWidth;
 
                 panel.Controls.Add(cb);
+                cb.CheckedChanged += SchemaCheckBox_CheckedChanged;
+            }
+        }
+
+        private void SchemaCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (sender is not CheckBox cb)
+                return;
+
+            // Update background color when capture-only toggle is active
+            try
+            {
+                if (cb.Checked && chkCaptureOnlySelected != null && chkCaptureOnlySelected.BackColor != Color.Transparent)
+                {
+                    cb.BackColor = chkCaptureOnlySelected.BackColor;
+                }
+                else
+                {
+                    cb.BackColor = Color.Transparent;
+                }
+            }
+            catch
+            {
+                // harmless fallback if UI update fails
+                cb.BackColor = Color.Transparent;
+            }
+
+            // Keep schemaFilters list in sync with checkbox state
+            string tag = cb.Tag?.ToString();
+            if (string.IsNullOrWhiteSpace(tag))
+                return;
+
+            if (cb.Checked)
+            {
+                if (!schemaFilters.Contains(tag))
+                    schemaFilters.Add(tag);
+            }
+            else
+            {
+                schemaFilters.Remove(tag);
             }
         }
 
@@ -163,7 +237,7 @@ namespace SQLEventProfiler
             txtFilters.SelectionStart = newCharIndex + line.Length;
             txtFilters.SelectionLength = 0;
 
-            ApplyLeftPadding(lineIndex);            
+            ApplyLeftPadding(lineIndex);
         }
 
         private void ApplyLeftPadding(int lineNumber = 0)
@@ -462,6 +536,49 @@ namespace SQLEventProfiler
             //ColorizeFilters(txtFiltersExec);
             //pnlLineNumbersExec.Invalidate();
         }
+
+        private void tabFilterCategories_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabFilterCategories.SelectedIndex < 2)
+            {
+                btnToggleSelected.Visible = true;
+                chkCaptureOnlySelected.Visible = false;
+            }
+            else
+            {
+                btnToggleSelected.Visible = false;
+                chkCaptureOnlySelected.Visible = true;
+            }
+        }
+
+        private void chkCaptureOnlySelected_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CaptureOnlySelected = chkCaptureOnlySelected.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void chkCaptureOnlySelected_Click(object sender, EventArgs e)
+        {
+            if (chkCaptureOnlySelected.BackColor == Color.Transparent)
+            {
+                chkCaptureOnlySelected.UseVisualStyleBackColor = false;
+                chkCaptureOnlySelected.BackColor = schemaToCaptureColor;
+            }
+            else
+            {
+                chkCaptureOnlySelected.UseVisualStyleBackColor = false;
+                chkCaptureOnlySelected.BackColor = Color.Transparent;
+            }
+
+
+            foreach (CheckBox cbx in pnlSchemas.Controls.OfType<CheckBox>())
+            {
+                if (cbx.Checked)
+                {
+                    cbx.BackColor = chkCaptureOnlySelected.BackColor;
+                }              
+            }
+        }
     }
 
     public class DoubleBufferedPanel : Panel
@@ -474,5 +591,5 @@ namespace SQLEventProfiler
             this.SetStyle(ControlStyles.UserPaint, true);
             this.UpdateStyles();
         }
-    }
+    }  
 }
