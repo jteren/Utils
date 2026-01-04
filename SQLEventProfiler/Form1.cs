@@ -370,7 +370,7 @@ namespace SQLEventProfiler
                     }
                     else
                     {
-                        MessageBox.Show("File does not exist.");
+                       // MessageBox.Show("File does not exist.");
                     }
 
                 }
@@ -634,7 +634,7 @@ namespace SQLEventProfiler
                 CREATE EVENT SESSION [{sessionName}]
                 ON SERVER
                 ADD EVENT sqlserver.sql_batch_completed
-                (
+(
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
                     WHERE (sqlserver.database_name <> 'tempdb')
                     AND (batch_text NOT LIKE '%sys.objects%') 
@@ -649,9 +649,9 @@ namespace SQLEventProfiler
                     AND (sqlserver.client_app_name <> 'Core Microsoft SqlClient Data Provider')
                     AND (sqlserver.client_app_name <> 'SQLServerCEIP')                    
                     {userOrHostNameFilter}
-                ),
+),
                 ADD EVENT sqlserver.rpc_completed
-                (
+(
                     ACTION (sqlserver.client_app_name, sqlserver.client_hostname, sqlserver.username, sqlserver.database_name)
                     WHERE (sqlserver.database_name <> 'tempdb')
                     AND (statement NOT LIKE '%sp_help%')         
@@ -667,7 +667,7 @@ namespace SQLEventProfiler
                     AND (sqlserver.client_app_name <> 'SQLServerCEIP')
                     AND (sqlserver.client_app_name <> N'Microsoft SQL Server Management Studio')                  
                     {userOrHostNameFilter}
-                )
+)
                 ADD TARGET package0.ring_buffer;
             END
 
